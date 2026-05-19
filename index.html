@@ -3,659 +3,555 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>문명 재건 — 신소재공학의 시대</title>
+<title>망상화학 공정 메가 허브 (Reticular Chemistry Mega Hub)</title>
 <style>
-* { box-sizing: border-box; margin: 0; padding: 0; }
-html, body { width: 100%; height: 100%; overflow: hidden; font-family: 'Segoe UI', system-ui, sans-serif; background: #1a1a1a; color: #e0e0e0; }
-
-/* ── LAYOUT ── */
-#ui-root { display: grid; grid-template-columns: 220px 1fr 280px; grid-template-rows: 44px 1fr 160px; width: 100vw; height: 100vh; }
-
-/* ── TOP BAR ── */
-#topbar {
-  grid-column: 1 / 4; grid-row: 1;
-  background: #111; border-bottom: 1px solid #2a2a2a;
-  display: flex; align-items: center; gap: 20px; padding: 0 16px;
+:root {
+  --bg-main: #060913;
+  --bg-panel: #0f172a;
+  --bg-card: #1e293b;
+  --accent-blue: #38bdf8;
+  --accent-green: #34d399;
+  --accent-purple: #c084fc;
+  --accent-orange: #fb923c;
+  --accent-pink: #f472b6;
+  --text-main: #f8fafc;
+  --text-muted: #94a3b8;
 }
-.game-title { font-size: 14px; font-weight: 600; color: #c8e6a0; letter-spacing: 0.5px; }
-.res-group { display: flex; gap: 14px; flex: 1; flex-wrap: wrap; }
-.res-chip { font-size: 11px; color: #999; display: flex; align-items: center; gap: 4px; }
-.res-chip span { font-weight: 600; font-size: 12px; }
-.res-chip.stone span { color: #b0a090; }
-.res-chip.wood  span { color: #7db86a; }
-.res-chip.fuel  span { color: #e08030; }
-.res-chip.ore   span { color: #90aacc; }
-.res-chip.power span { color: #aaddff; }
-.day-label { font-size: 12px; color: #aaa; margin-left: auto; font-weight: bold; }
-#era-badge { font-size: 11px; padding: 2px 10px; border-radius: 10px; font-weight: 600; }
 
-/* ── LEFT PANEL ── */
-#left-panel {
-  grid-column: 1; grid-row: 2 / 4;
-  background: #141414; border-right: 1px solid #222;
-  display: flex; flex-direction: column; overflow: hidden;
-  padding: 10px; gap: 12px;
+* { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', system-ui, sans-serif; }
+body { background-color: var(--bg-main); color: var(--text-main); width: 100vw; height: 100vh; overflow: hidden; display: flex; flex-direction: column; }
+
+/* LAYOUT STRUCTURE */
+header {
+  height: 60px; background: var(--bg-panel); border-bottom: 2px solid #1e293b;
+  display: flex; align-items: center; justify-content: space-between; padding: 0 24px; z-index: 10;
 }
-.panel-section { background: #1c1c1c; padding: 10px; border-radius: 6px; border: 1px solid #2a2a2a; }
-.panel-title { font-size: 11px; color: #888; letter-spacing: 1px; text-transform: uppercase; margin-bottom: 8px; font-weight: bold; }
+.main-container { flex: 1; display: grid; grid-template-columns: 320px 1fr 360px; height: calc(100vh - 60px); overflow: hidden; }
 
-.pop-display { text-align: center; padding: 4px 0; }
-.pop-num { font-size: 28px; font-weight: 700; color: #c8e6a0; line-height: 1; }
-.pop-sub { font-size: 10px; color: #555; margin-top: 2px; }
+/* PANELS */
+.side-panel { background: var(--bg-panel); border-right: 1px solid #1e293b; display: flex; flex-direction: column; overflow-y: auto; padding: 18px; gap: 18px; }
+.side-panel.right { border-right: none; border-left: 1px solid #1e293b; }
+#center-viewport { position: relative; background: #030712; overflow: hidden; display: flex; flex-direction: column; }
+#canvas-container { flex: 1; position: relative; }
+canvas { display: block; width: 100%; height: 100%; }
 
-.stat-row { display: flex; align-items: center; gap: 6px; margin-bottom: 6px; }
-.stat-label { font-size: 11px; color: #666; width: 45px; flex-shrink: 0; }
-.stat-bar { flex: 1; height: 5px; background: #222; border-radius: 2px; overflow: hidden; }
-.stat-fill { height: 100%; border-radius: 2px; transition: width 0.4s; }
-.stat-val { font-size: 11px; color: #888; width: 24px; text-align: right; }
+/* COMPONENTS & STATUS CARDS */
+.section-title { font-size: 12px; font-weight: 800; text-transform: uppercase; letter-spacing: 2px; color: var(--accent-blue); margin-bottom: 10px; border-left: 4px solid var(--accent-blue); padding-left: 8px; }
+.stat-card { background: var(--bg-card); padding: 14px; border-radius: 10px; border: 1px solid #334155; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1); }
+.stat-row { display: flex; justify-content: space-between; font-size: 13px; margin-bottom: 8px; align-items: center; }
+.stat-row:last-child { margin-bottom: 0; }
+.stat-val { font-weight: 700; color: var(--text-main); font-family: monospace; }
 
-/* Control guide */
-.guide-box { font-size: 11px; color: #aaa; line-height: 1.5; background: #1a2518; border: 1px solid #2a4425; padding: 8px; border-radius: 4px; }
-
-#tick-btn {
-  padding: 10px; border-radius: 6px;
-  background: #22361e; border: 1px solid #3a5a2a;
-  color: #8cc870; font-size: 13px; font-weight: 600;
-  cursor: pointer; transition: all 0.15s; letter-spacing: 0.5px;
-  margin-top: auto;
+/* INTERACTION MENU */
+.grid-menu { display: flex; flex-direction: column; gap: 10px; }
+.build-btn {
+  background: var(--bg-card); border: 1px solid #334155; border-radius: 8px; padding: 12px;
+  color: var(--text-main); text-align: left; cursor: pointer; transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
 }
-#tick-btn:hover { background: #2d4928; }
+.build-btn:hover { border-color: var(--accent-blue); background: rgba(56, 189, 248, 0.08); transform: translateY(-1px); }
+.build-btn.active { border-color: var(--accent-green); background: rgba(16, 185, 129, 0.12); box-shadow: 0 0 12px rgba(16, 185, 129, 0.2); }
+.btn-meta { font-size: 11px; color: var(--text-muted); margin-top: 5px; font-family: monospace; display: flex; gap: 8px; }
 
-/* ── MAP ── */
-#map-wrap {
-  grid-column: 2; grid-row: 2;
-  position: relative; overflow: hidden;
+/* EXPANDED TECH TREE */
+.tech-card {
+  background: var(--bg-card); border: 1px solid #334155; border-radius: 10px; padding: 14px; margin-bottom: 10px;
+  position: relative; transition: all 0.2s; cursor: pointer;
 }
-#map-canvas { display: block; width: 100%; height: 100%; }
+.tech-card:hover { border-color: var(--accent-purple); background: rgba(192, 132, 252, 0.05); }
+.tech-card.unlocked { border-color: var(--accent-green); background: rgba(6, 78, 59, 0.25); }
+.tech-formula { font-size: 11px; color: var(--accent-blue); font-family: monospace; background: #090d16; padding: 4px 8px; border-radius: 5px; margin: 6px 0; display: inline-block; border: 1px solid #1e293b; }
 
-/* ── RIGHT PANEL ── */
-#right-panel {
-  grid-column: 3; grid-row: 2 / 4;
-  background: #141414; border-left: 1px solid #222;
-  display: flex; flex-direction: column; overflow: hidden;
-}
-.right-tabs { display: flex; border-bottom: 1px solid #222; background: #111; }
-.rtab { flex: 1; padding: 10px 4px; font-size: 11px; text-align: center; cursor: pointer; color: #666; border: none; background: none; border-bottom: 2px solid transparent; transition: all 0.15s; font-weight: bold; }
-.rtab.active { color: #c8e6a0; border-bottom-color: #6a9e50; background: #141414; }
-.rtab-content { display: none; flex: 1; overflow-y: auto; padding: 10px; }
-.rtab-content::-webkit-scrollbar { width: 3px; }
-.rtab-content::-webkit-scrollbar-thumb { background: #333; }
-.rtab-content.active { display: block; }
+/* TERMINAL LOG PANEL */
+#log-panel { height: 150px; background: #020617; border-top: 2px solid #1e293b; padding: 12px; overflow-y: auto; font-family: 'Courier New', monospace; font-size: 11px; color: #e2e8f0; }
+.log-entry { margin-bottom: 5px; line-height: 1.5; border-left: 2px solid #334155; padding-left: 8px; }
+.log-text.success { color: var(--accent-green); border-color: var(--accent-green); }
+.log-text.special { color: var(--accent-purple); font-weight: bold; border-color: var(--accent-purple); }
+.log-text.warn { color: var(--accent-orange); border-color: var(--accent-orange); }
 
-/* Tech/Craft Cards */
-.tech-era { font-size: 10px; color: #777; letter-spacing: 1px; text-transform: uppercase; margin: 12px 0 6px; font-weight: bold; border-bottom: 1px solid #222; padding-bottom: 2px; }
-.game-card {
-  background: #1c1c1c; border: 1px solid #2a2a2a; border-radius: 6px;
-  padding: 10px; margin-bottom: 6px; cursor: pointer; transition: all 0.15s;
-}
-.game-card:hover:not(.locked):not(.done) { border-color: #4a7aaa; background: #1a2535; }
-.game-card.done { border-color: #3a5a2a; background: #141e10; opacity: 0.8; }
-.game-card.locked { opacity: 0.3; cursor: not-allowed; }
-.game-card.active-research { border-color: #aa7030; background: #251a10; }
-.card-title { font-size: 12px; font-weight: bold; color: #eee; margin-bottom: 4px; display: flex; justify-content: space-between; }
-.card-formula { font-size: 10px; color: #4a8acc; font-family: monospace; margin-bottom: 4px; background: #0f1822; padding: 2px 6px; border-radius: 3px; width: max-content; }
-.card-desc { font-size: 11px; color: #888; margin-bottom: 6px; line-height: 1.4; }
-.card-costs { display: flex; gap: 4px; flex-wrap: wrap; margin-bottom: 4px; }
-.cost-tag { font-size: 10px; padding: 1px 4px; border-radius: 3px; background: #262626; color: #aaa; }
-.cost-tag.no { color: #ff6b6b; background: #3a1c1c; }
+/* HUD OVERLAYS */
+.hud-overlay { position: absolute; top: 20px; left: 20px; background: rgba(15, 23, 42, 0.9); backdrop-filter: blur(6px); padding: 14px 18px; border-radius: 8px; border: 1px solid #334155; pointer-events: none; font-size: 12px; line-height: 1.6; box-shadow: 0 10px 15px -3px rgba(0,0,0,0.3); }
+#ending-screen { position: absolute; inset: 0; background: rgba(2, 6, 23, 0.95); z-index: 100; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 20px; padding: 40px; text-align: center; display: none; }
+.ending-title { font-size: 32px; font-weight: 900; color: var(--accent-green); letter-spacing: 1px; }
 
-/* Inventory info inside craft tab */
-.inv-box { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; margin-bottom: 12px; background: #111; padding: 8px; border-radius: 4px; border: 1px solid #222; }
-.inv-item { font-size: 11px; color: #aaa; }
-.inv-item span { font-weight: bold; color: #ffe080; }
-
-/* Detail box */
-#detail-box { padding: 12px; font-size: 12px; border-top: 1px solid #222; background: #111; }
-#detail-box.hidden { display: none; }
-.db-title { font-size: 14px; font-weight: bold; color: #c8e6a0; margin-bottom: 6px; }
-.db-btn {
-  width: 100%; padding: 8px; border-radius: 5px; border: 1px solid #4a7aaa;
-  background: #1a2535; color: #8cb3e0; font-size: 12px; font-weight: bold;
-  cursor: pointer; transition: all 0.15s; margin-top: 6px;
-}
-.db-btn:hover:not(:disabled) { background: #22354d; }
-.db-btn:disabled { opacity: 0.4; cursor: not-allowed; border-color: #333; background: #222; color: #555; }
-
-/* ── BOTTOM LOG ── */
-#bottom-log {
-  grid-column: 2; grid-row: 3;
-  background: #0f0f0f; border-top: 1px solid #222;
-  padding: 10px; overflow-y: auto; display: flex; flex-direction: column; gap: 4px;
-  font-family: monospace;
-}
-.log-line { font-size: 11px; color: #666; line-height: 1.4; }
-.log-line.success { color: #7db86a; }
-.log-line.warn { color: #dd8844; }
-.log-line.info { color: #4a8acc; }
-.log-line.special { color: #cc70cc; font-weight: bold; }
-
-#tooltip {
-  position: absolute; background: #111; border: 1px solid #444;
-  border-radius: 4px; padding: 6px 8px; font-size: 11px; color: #ccc;
-  pointer-events: none; display: none; z-index: 100; line-height: 1.4;
-}
+.progress-bar-container { width: 100%; height: 6px; background: #090d16; border-radius: 3px; margin-top: 6px; overflow: hidden; }
+.progress-bar-fill { height: 100%; width: 0%; background: var(--accent-blue); transition: width 0.3s ease; }
 </style>
 </head>
 <body>
-<div id="ui-root">
 
-  <div id="topbar">
-    <div class="game-title">⚙ 문명 재건: 신소재의 화원</div>
-    <span id="era-badge" style="background:#222;color:#aaa;">석기 시대</span>
-    <div class="res-group">
-      <div class="res-chip stone">돌 <span id="r-stone">100</span></div>
-      <div class="res-chip wood">목재 <span id="r-wood">100</span></div>
-      <div class="res-chip fuel">연료 <span id="r-fuel">50</span></div>
-      <div class="res-chip ore">광물 <span id="r-ore">0</span></div>
-      <div class="res-chip power">전력 <span id="r-power">0</span></div>
+  <header>
+    <div style="display:flex; align-items:center; gap:14px;">
+      <span style="font-size:18px; font-weight:900; letter-spacing:1px; color:#f8fafc; background: linear-gradient(to right, #38bdf8, #c084fc); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">🧪 RETICULAR LABS: MEGA INFRA</span>
+      <span style="font-size:11px; background:#1e3a8a; color:#93c5fd; padding:3px 10px; border-radius:20px; font-weight:bold; border: 1px solid #2563eb;">공학 고도화 시뮬레이션 v2.5</span>
     </div>
-    <div class="day-label" id="day-label">Day 1</div>
-  </div>
+    <div style="display:flex; gap:30px; font-size:13px;">
+      <div>⚡ 가동 전력 레벨: <span id="hud-power" style="color:var(--accent-blue); font-weight:bold;">15 kW</span></div>
+      <div>🍃 대기 순환경과 (DAC): <span id="hud-dac" style="color:var(--accent-green); font-weight:bold;">0.0 ppm/s</span></div>
+      <div>🌀 글로벌 촉매 인자: <span id="hud-speed" style="color:var(--accent-purple); font-weight:bold;">1.00x</span></div>
+    </div>
+  </header>
 
-  <div id="left-panel">
-    <div class="panel-section">
-      <div class="panel-title">문명 지표</div>
-      <div class="stat-row">
-        <div class="stat-label" style="color:#ff6b6b;">생존율</div>
-        <div class="stat-bar"><div class="stat-fill" id="bar-survival" style="width:80%;background:#ff6b6b;"></div></div>
-        <div class="stat-val" id="val-survival">80</div>
+  <div class="main-container">
+    <div class="side-panel">
+      <div>
+        <div class="section-title">화학 공정 기초 공급고</div>
+        <div class="stat-card" style="display:flex; flex-direction:column; gap:8px;">
+          <div class="stat-row"><span>🪨 사염화규소 ($SiCl_4$)</span><span class="stat-val" id="mat-sicl">150</span></div>
+          <div class="stat-row"><span>⛓️ 금속 노드 원료 (Zn/Cu 등)</span><span class="stat-val" id="mat-metal">60</span></div>
+          <div class="stat-row"><span>⚗️ 유기 링커 수지 (BDC/BTC)</span><span class="stat-val" id="mat-linker">60</span></div>
+          <div class="stat-row"><span>⛽ 고온 캐리어 가스 ($H_2$)</span><span class="stat-val" id="mat-h2">200</span></div>
+        </div>
       </div>
-      <div class="stat-row">
-        <div class="stat-label" style="color:#f39c12;">에너지 수급</div>
-        <div class="stat-bar"><div class="stat-fill" id="bar-energy" style="width:20%;background:#f39c12;"></div></div>
-        <div class="stat-val" id="val-energy">20</div>
+
+      <div>
+        <div class="section-title">정밀 합성 신소재 인벤토리</div>
+        <div class="stat-card" style="display:flex; flex-direction:column; gap:10px;">
+          <div class="stat-row"><span>💠 태양광 반도체용 고순도 규소 ($Si$)</span><span class="stat-val" id="sub-silicon" style="color:var(--accent-blue)">0</span></div>
+          <div class="stat-row"><span>🧽 다공성 결정체 MOF-5 격자</span><span class="stat-val" id="sub-mof" style="color:var(--accent-purple)">0</span></div>
+          <div class="stat-row"><span>🍃 기공 수식형 COF-999 패널</span><span class="stat-val" id="sub-cof" style="color:var(--accent-green)">0</span></div>
+          <div class="stat-row"><span>💎 공유결합 유기 골격 하이브리드</span><span class="stat-val" id="sub-hybrid" style="color:var(--accent-pink)">0</span></div>
+        </div>
       </div>
-      <div class="stat-row">
-        <div class="stat-label" style="color:#3498db;">기술력</div>
-        <div class="stat-bar"><div class="stat-fill" id="bar-tech" style="width:5%;background:#3498db;"></div></div>
-        <div class="stat-val" id="val-tech">5</div>
+
+      <div style="margin-top:auto;">
+        <div class="section-title">산업 인프라 제어 배선반</div>
+        <div class="grid-menu" id="build-menu">
+          <button class="build-btn active" data-mode="inspect">🔍 인프라 연쇄반응 모니터링 모드</button>
+          <button class="build-btn" data-mode="build_purifier">🏭 지멘스 유동층 정련소 증설<div class="btn-meta"><span>소요: $SiCl_4$ 30</span><span>$H_2$ 50</span></div></button>
+          <button class="build-btn" data-mode="build_mof_node">🌀 망상구조 MOF-5 결정화 촉매탑<div class="btn-meta"><span>소요: 금속 20</span><span>링커 20</span></div></button>
+          <button class="build-btn" data-mode="build_dac_tower">🌲 COF 탄소 제로 에어 포집 타워<div class="btn-meta"><span>소요: 링커 30</span><span>규소 10</span></div></button>
+          <button class="build-btn" data-mode="build_hybrid_reactor">🧪 망상 복합 하이브리드 원자로<div class="btn-meta"><span>소요: MOF 10</span><span>COF 10</span></div></button>
+        </div>
       </div>
     </div>
 
-    <div class="panel-section guide-box">
-      <strong>🎮 조작 방법</strong><br>
-      • <strong>방향키 / WASD</strong>: 개척자 이동<br>
-      • 개척자가 자원(원형 노드) 위에 서면 자동 채집!<br>
-      • <strong>스페이스바</strong>: 현재 위치에 구조물 건설 (건설 기술 필요)
-    </div>
-
-    <div class="panel-section" style="font-size:11px; line-height: 1.4; color: #999;">
-      <strong>👤 개척자 상태</strong><br>
-      • 속도 배율: <span id="p-speed" style="color:#6a9e50; font-weight:bold;">1.0x</span><br>
-      • 배낭 용량: <span id="p-capacity" style="color:#4a8acc; font-weight:bold;">30</span> / <span id="p-max-capacity">30</span>
-    </div>
-
-    <button id="tick-btn" onclick="nextDay()">▶ 하루 경과 (자원/연구 갱신)</button>
-  </div>
-
-  <div id="map-wrap">
-    <canvas id="map-canvas"></canvas>
-    <div id="tooltip"></div>
-  </div>
-
-  <div id="right-panel">
-    <div class="right-tabs">
-      <button class="rtab active" onclick="switchRTab('tech',this)">1. 기초 화학 및 기술 트리</button>
-      <button class="rtab" onclick="switchRTab('craft',this)">2. 신소재 합성 및 제작</button>
-    </div>
-    
-    <div id="rtab-tech" class="rtab-content active"></div>
-    
-    <div id="rtab-craft" class="rtab-content">
-      <div class="panel-title">고차원 신소재 보관함</div>
-      <div class="inv-box">
-        <div class="inv-item">고순도 실리콘: <span id="i-silicon">0</span>개</div>
-        <div class="inv-item">폴리에틸렌: <span id="i-polymer">0</span>개</div>
-        <div class="inv-item">탄소 복합재(CFRP): <span id="i-cfrp">0</span>개</div>
-        <div class="inv-item">제작된 소형 발전기: <span id="i-build-gen">0</span>개</div>
+    <div id="center-viewport">
+      <div id="canvas-container">
+        <canvas id="sim-canvas"></canvas>
+        <div class="hud-overlay">
+          <strong>⚙️ 인프라 조작 가이드</strong><br>
+          • 우측 연구 탭의 기술을 해금해야 시설 건설 권한이 주어집니다.<br>
+          • 맵 타일을 클릭해 인프라를 건설하면, 물질 전달 입자가 실시간 이동합니다.<br>
+          • 최종 목표: 하이브리드 원자로 2동 건설 및 전력 500kW 확보하여 <strong>인프라 고도화 성공(엔딩)</strong>하기!
+        </div>
       </div>
-      <div id="craft-list"></div>
+      
+      <div id="ending-screen">
+        <div class="ending-title">🎉 망상화학 에너지 허브 고도화 문명 달성 🎉</div>
+        <p style="font-size: 16px; color: var(--text-muted); max-width: 600px; line-height: 1.6;">
+          축하합니다! 오마르 야기 교수의 <strong>망상화학(Reticular Chemistry)</strong> 설계를 기반으로 다공성 기공 구조를 완벽히 통제하여 대기 중 탄소를 완벽히 제거하고 고밀도 분자 에너지 제어 인프라를 구축하는 데 성공했습니다. 인류는 신소재 공학의 혁신을 통해 다음 세대의 친환경 청정에너지 자립 시대로 진입합니다!
+        </p>
+        <button onclick="location.reload()" style="padding: 12px 24px; border: none; background: var(--accent-green); color: #000; font-weight: bold; border-radius: 6px; cursor: pointer;">시스템 재가동</button>
+      </div>
+
+      <div id="log-panel"></div>
     </div>
-    
-    <div id="detail-box" class="hidden"></div>
-  </div>
 
-  <div id="bottom-log">
-    <div class="log-line info">시스템: 문명 복원 시뮬레이터 가동. 개척자를 움직여 영토를 탐색하고 신소재를 합성하세요!</div>
+    <div class="side-panel right">
+      <div class="section-title">화공 & 망상학 R&D 과제 개요</div>
+      <div id="tech-tree-container" style="display:flex; flex-direction:column; gap:12px;">
+        </div>
+    </div>
   </div>
-
-</div>
 
 <script>
 // ═══════════════════════════════════════════
-//  WORLD GRAPHICS & GENERATION
-// ═══════════════════════════════════════════
-const WORLD_W = 80, WORLD_H = 60;
-let heightMap = [], resourceMap = [];
-let buildings = []; // {x, y, type}
-
-function generateWorld() {
-  for (let y=0; y<WORLD_H; y++) {
-    heightMap[y] = [];
-    resourceMap[y] = [];
-    for (let x=0; x<WORLD_W; x++) {
-      // 심플 노이즈 대용 수학식
-      let h = (Math.sin(x*0.15) + Math.cos(y*0.15) + Math.sin((x+y)*0.05)) / 3;
-      heightMap[y][x] = (h + 1) / 2; // 0 ~ 1
-      resourceMap[y][x] = null;
-    }
-  }
-
-  // 자원 매장
-  const types = ['stone', 'wood', 'ore', 'fuel'];
-  types.forEach(t => {
-    let placed = 0;
-    while(placed < 25) {
-      let rx = Math.floor(Math.random()*WORLD_W);
-      let ry = Math.floor(Math.random()*WORLD_H);
-      if (!resourceMap[ry][rx] && heightMap[ry][rx] > 0.3) {
-        resourceMap[ry][rx] = { type: t, amount: Math.floor(Math.random()*40 + 20) };
-        placed++;
-      }
-    }
-  });
-}
-
-const BIOME_COLOR = (h) => {
-  if (h < 0.3) return '#1a3a5c'; // 물
-  if (h < 0.38) return '#c8b87a'; // 해안 모래 (SiO2 확보 가능지)
-  if (h < 0.65) return '#5a8840'; // 평원/초원
-  if (h < 0.8) return '#7a7060'; // 고지대
-  return '#9a9898'; // 산악 금속지대
-};
-
-const RES_COLOR = { stone:'#aaaaaa', wood:'#8b5a2b', ore:'#5080c0', fuel:'#d35400' };
-
-// ═══════════════════════════════════════════
-//  GAME STATE
-// ═══════════════════════════════════════════
-let state = {
-  day: 1,
-  res: { stone: 100, wood: 100, fuel: 50, ore: 0, power: 0 },
-  subMaterials: { silicon: 0, polymer: 0, cfrp: 0, builtGenerator: 0 },
-  stats: { survival: 80, energy: 20, tech: 5 },
-  unlockedTechs: new Set(),
-  unlockedCrafts: new Set(),
-  researching: null,
-  researchProg: 0,
-  era: '석기 시대',
-  // 개척자 데이터
-  player: { x: 40, y: 30, speed: 1.0, capacity: 0, maxCapacity: 30 }
-};
-
-// ═══════════════════════════════════════════
-//  TECH TREE & CRAFT DATA DATA
+//  EXTENDED CHEMICAL DATA CONFIG
 // ═══════════════════════════════════════════
 const TECHS = [
-  { id: 'fire', name: '🔥 발화점 돌파 및 탄소 제어', formula: 'C + O₂ → CO₂ + 열', desc: '마찰열로 산화 반응을 유도합니다. 연료 효율 향상 및 화학 공학의 기초가 열립니다.', costs: { stone: 20, wood: 20 }, req: [] },
-  { id: 'smelting', name: '⚒️ 고온 환원 야금학', formula: 'Fe₂O₃ + 3CO → 2Fe + 3CO₂', desc: '일산화탄소를 이용해 철광석을 환원합니다. 금속 인프라 및 고온 장치 구축 가능.', costs: { stone: 50, wood: 40 }, req: ['fire'] },
-  { id: 'si_purify', name: '🧪 지멘스 고순도 정련법', formula: 'SiCl₄ + 2H₂ → Si + 4HCl', desc: '사염화규소를 환원시켜 반도체의 핵심이 되는 99.999% 초고순도 실리콘을 석출해냅니다.', costs: { ore: 40, fuel: 50 }, req: ['smelting'] },
-  { id: 'polymer_chem', name: '🧪 에틸렌 라디칼 중합 반응', formula: 'n CH₂=CH₂ → -[CH₂-CH₂]n-', desc: '석유 화학 연료를 열분해하여 고분자 탄화수소화합물인 폴리에틸렌(플라스틱)을 합성합니다. 절연재의 핵심.', costs: { fuel: 80 }, req: ['fire'] },
-  { id: 'carbon_fiber', name: '🚀 PAN계 탄소섬유 결정화', formula: 'PAN 고분자 고온 탄화 → 고강도 C 섬유', desc: '고분자 유기물을 산소 차단 상태에서 1500°C 이상 가열해 결합을 끊고 순수 탄소 육각 그물망 섬유를 직조합니다.', costs: { fuel: 100, ore: 60 }, req: ['polymer_chem', 'smelting'] }
+  {
+    id: 'si_purify',
+    name: '1단계: 지멘스 기상 환원 반응 최적화',
+    formula: 'SiCl₄(g) + 2H₂(g) → Si(s) + 4HCl(g)',
+    desc: '고온 기상 환경에서 사염화규소 가스를 환원시켜 격자 구조의 결정성 초고순도 실리콘 반도체 기판 원료를 사출해냅니다.',
+    unlocked: false, cost: { sicl: 30, h2: 40 }
+  },
+  {
+    id: 'reticular_base',
+    name: '2단계: 망상 결합 기하학적 토대 구축',
+    formula: 'Secondary Building Units (SBUs) Assembly',
+    desc: '금속 산화물 클러스터 무기 노드와 유기 카복실산 연결체를 기하학적 대칭 구조로 매칭하는 망상 합성 기반 지식을 해금합니다.',
+    unlocked: false, cost: { sicl: 40, linker: 20 }, req: 'si_purify'
+  },
+  {
+    id: 'mof_5',
+    name: '3단계: Zn₄O(BDC)₃ 다공성 격자 결정화',
+    formula: 'Metal-Organic Framework-5 Synthesis',
+    desc: '초고밀도 미세 기공을 지닌 분자 스펀지 구조를 인공 합성하여, 화학물질 정제 배율 및 촉매 가동률을 혁신적으로 펌핑시킵니다.',
+    unlocked: false, cost: { metal: 40, linker: 40 }, req: 'reticular_base'
+  },
+  {
+    id: 'cof_999',
+    name: '4단계: COF-999 아민기 수식 대기 포집 공정',
+    formula: 'Covalent Organic Framework + Direct Air Capture',
+    desc: '금속을 배제한 가벼운 공유결합 골격체에 이산화탄소 친화성 아민 분자 구조를 증착, 대기 중 $CO_2$를 분자 선택적으로 가두는 청정 환경 제어 탑을 완성합니다.',
+    unlocked: false, cost: { linker: 50, metal: 20 }, req: 'mof_5'
+  },
+  {
+    id: 'hybrid_mesh',
+    name: '5단계: 하이브리드 메쉬 공유결합 제어 공학',
+    formula: 'MOF-COF Heterostructure Interconnection',
+    desc: '최첨단 융합 연구의 정점. MOF의 뛰어난 금속 촉매 활성점과 COF의 화학적 안정성을 융합하여 상온 에너지 증폭 효율을 극한으로 끌어올립니다.',
+    unlocked: false, cost: { linker: 60, sicl: 50 }, req: 'cof_999'
+  }
 ];
 
-const CRAFTS = [
-  { id: 'make_silicon', name: '고순도 실리콘 웨이퍼 추출', formula: 'SiO₂ + C 환원 후 Si 결정 성장', desc: '정제 기술을 사용해 원자 단위의 실리콘을 잉곳 형태로 뽑아냅니다. (반도체 부품)', costs: { ore: 20, fuel: 15 }, reqTech: 'si_purify', type: 'material', target: 'silicon' },
-  { id: 'make_polymer', name: '폴리에틸렌 고분자 패널 성형', formula: '에틸렌 중합 가공', desc: '가볍고 내식성이 뛰어난 범용 고분자 절연 플라스틱 판을 찍어냅니다.', costs: { fuel: 30 }, reqTech: 'polymer_chem', type: 'material', target: 'polymer' },
-  { id: 'make_cfrp', name: '탄소 복합 신소재(CFRP) 성형', formula: '탄소섬유 + 에폭시 수지 함침 적층', desc: '강철의 5배 강도에 무게는 1/4인 초경량 신소재 프레임을 성형합니다. 개척자 스펙 향상!', costs: { wood: 50, fuel: 40 }, reqTech: 'carbon_fiber', type: 'material', target: 'cfrp' },
-  { id: 'craft_generator', name: '🔋 고효율 반도체 태양광 발전기 구조물', formula: 'p-n 접합 실리콘 + 플라스틱 절연체', desc: '빛 에너지를 전기에너지로 변환하는 태양전지 구조물 아이템을 제작합니다. (맵에 설치 가능!)', costs: { silicon: 2, polymer: 2 }, chemicalCraft: true, type: 'structure', target: 'builtGenerator' }
-];
+let state = {
+  res: { sicl: 200, metal: 80, linker: 80, h2: 250 },
+  sub: { silicon: 0, mof: 0, cof: 0, hybrid: 0 },
+  power: 15,
+  dac: 0,
+  speedMultiplier: 1.0,
+  currentMode: 'inspect',
+  hybridCount: 0
+};
 
-// ═══════════════════════════════════════════
-//  CONTROLS & INTERACTION (방향키 조작 중심)
-// ═══════════════════════════════════════════
-window.addEventListener('keydown', e => {
-  let dx = 0, dy = 0;
-  if (e.key === 'ArrowUp' || e.key === 'w' || e.key === 'W') dy = -1;
-  if (e.key === 'ArrowDown' || e.key === 's' || e.key === 'S') dy = 1;
-  if (e.key === 'ArrowLeft' || e.key === 'a' || e.key === 'A') dx = -1;
-  if (e.key === 'ArrowRight' || e.key === 'd' || e.key === 'D') dx = 1;
+const TILE_SIZE = 60;
+let grid = [];
+let particles = []; 
 
-  if (dx !== 0 || dy !== 0) {
-    e.preventDefault();
-    movePlayer(dx, dy);
-  }
-
-  if (e.key === ' ') { // 스페이스바: 구조물 건설
-    e.preventDefault();
-    buildStructure();
-  }
-});
-
-function movePlayer(dx, dy) {
-  let newX = state.player.x + dx;
-  let newY = state.player.y + dy;
-
-  // 맵 경계 체크
-  if (newX >= 0 && newX < WORLD_W && newY >= 0 && newY < WORLD_H) {
-    // 바다 이동 불가 제한 (신소재 선박 업그레이드 전까지 등 - 기획 확장용)
-    if (heightMap[newY][newX] < 0.3) {
-      addLog("시스템: 깊은 물을 건널 수 없습니다. 우회하세요.", "warn");
-      return;
-    }
-    state.player.x = newX;
-    state.player.y = newY;
-    checkResourceCollision(newX, newY);
-    renderMap();
-  }
-}
-
-function checkResourceCollision(x, y) {
-  let res = resourceMap[y][x];
-  if (res && res.amount > 0) {
-    let harvestAmt = Math.min(res.amount, 5);
-    res.amount -= harvestAmt;
-    state.res[res.type] += harvestAmt;
-    addLog(`개척자: 현장에서 [${resLabel(res.type)}] ${harvestAmt}단위 직접 수확 성공!`, "success");
-    if (res.amount <= 0) resourceMap[y][x] = null;
-    updateUI();
-  }
-}
-
-function buildStructure() {
-  if (state.subMaterials.builtGenerator <= 0) {
-    addLog("건설 실패: 가방에 배치 가능한 '태양광 발전기 구조물' 아이템이 없습니다. 우측 메뉴에서 먼저 합성하세요!", "warn");
-    return;
-  }
-
-  // 중복 건물 검사
-  let exist = buildings.find(b => b.x === state.player.x && b.y === state.player.y);
-  if (exist) {
-    addLog("건설 실패: 이미 이 타일에 구조물이 존재합니다.", "warn");
-    return;
-  }
-
-  state.subMaterials.builtGenerator--;
-  buildings.push({ x: state.player.x, y: state.player.y, type: 'solar_panel' });
-  state.stats.energy = Math.min(100, state.stats.energy + 15); // 설치 즉시 에너지 수급량 대폭 증가!
-  addLog(`🏗️ 신소재 배치 완료: 현재 좌표에 [반도체 태양광 발전기]를 건설했습니다! 매달 보너스 전력이 발생합니다.`, "special");
-  updateUI();
-  renderMap();
-}
-
-// ═══════════════════════════════════════════
-//  CANVAS ENGINE
-// ═══════════════════════════════════════════
-const canvas = document.getElementById('map-canvas');
+const canvas = document.getElementById('sim-canvas');
 const ctx = canvas.getContext('2d');
-const TILE_SZ = 10;
 
-function resizeCanvas() {
-  const wrap = document.getElementById('map-wrap');
-  canvas.width = wrap.clientWidth;
-  canvas.height = wrap.clientHeight;
-  renderMap();
+function initGrid() {
+  const cols = Math.ceil(canvas.width / TILE_SIZE);
+  const rows = Math.ceil(canvas.height / TILE_SIZE);
+  grid = [];
+  for (let r = 0; r < rows; r++) {
+    grid[r] = [];
+    for (let c = 0; c < cols; c++) {
+      grid[r][c] = { type: 'empty' };
+    }
+  }
+  // 기지 코어 센터 배치
+  let mc = Math.floor(cols / 2);
+  let mr = Math.floor(rows / 2);
+  grid[mr][mc] = { type: 'center' };
+  grid[mr][mc-1] = { type: 'pipe' };
+  grid[mr][mc+1] = { type: 'pipe' };
 }
 
-function renderMap() {
-  ctx.clearRect(0, 0, canvas.width, canvas.height);
+// ═══════════════════════════════════════════
+//  RUN-TIME AUTO TICKING & BUFFER (공학 연산 엔진)
+// ═══════════════════════════════════════════
+function gameTick() {
+  // 지속 공급 버퍼 연산
+  state.res.sicl += 1.2 * state.speedMultiplier;
+  state.res.metal += 0.5 * state.speedMultiplier;
+  state.res.linker += 0.5 * state.speedMultiplier;
+  state.res.h2 += 2.0 * state.speedMultiplier;
 
-  // 카메라 포커스를 캐릭터 중심으로 이동 (단순 오프셋)
-  let offsetX = canvas.width / 2 - state.player.x * TILE_SZ;
-  let offsetY = canvas.height / 2 - state.player.y * TILE_SZ;
-
-  // 1. 타일 및 지형 렌더링
-  for (let y=0; y<WORLD_H; y++) {
-    for (let x=0; x<WORLD_W; x++) {
-      ctx.fillStyle = BIOME_COLOR(heightMap[y][x]);
-      ctx.fillRect(offsetX + x * TILE_SZ, offsetY + y * TILE_SZ, TILE_SZ - 0.5, TILE_SZ - 0.5);
-
-      // 자원 표시
-      let res = resourceMap[y][x];
-      if (res && res.amount > 0) {
-        ctx.fillStyle = RES_COLOR[res.type];
-        ctx.beginPath();
-        ctx.arc(offsetX + x * TILE_SZ + TILE_SZ/2, offsetY + y * TILE_SZ + TILE_SZ/2, TILE_SZ/3, 0, Math.PI*2);
-        ctx.fill();
+  // 그리드 배치물 기능 전개 루프
+  for (let r = 0; r < grid.length; r++) {
+    for (let c = 0; c < grid[r].length; c++) {
+      let tile = grid[r][c];
+      
+      if (tile.type === 'purifier' && state.res.sicl >= 2 && state.res.h2 >= 3) {
+        state.res.sicl -= 2;
+        state.res.h2 -= 3;
+        state.sub.silicon += 0.8 * state.speedMultiplier;
+        state.power += 0.8; 
+        if (Math.random() < 0.15) createFluidParticle(c, r, '#38bdf8');
+      }
+      else if (tile.type === 'mof_node' && state.res.metal >= 1 && state.res.linker >= 1) {
+        state.res.metal -= 1;
+        state.res.linker -= 1;
+        state.sub.mof += 0.4 * state.speedMultiplier;
+        if (Math.random() < 0.15) createFluidParticle(c, r, '#c084fc');
+      }
+      else if (tile.type === 'dac_tower' && state.sub.silicon >= 0.2) {
+        state.sub.silicon -= 0.2;
+        state.sub.cof += 0.3;
+        state.dac += 2.5;
+        if (Math.random() < 0.15) createFluidParticle(c, r, '#34d399');
+      }
+      else if (tile.type === 'hybrid_reactor' && state.sub.mof >= 0.2 && state.sub.cof >= 0.2) {
+        state.sub.mof -= 0.2;
+        state.sub.cof -= 0.2;
+        state.sub.hybrid += 0.2;
+        state.power += 15.0; // 하이브리드 초전도 계열 연쇄 반응 전력 폭발
+        if (Math.random() < 0.2) createFluidParticle(c, r, '#f472b6');
       }
     }
   }
 
-  // 2. 구조물(건물) 렌더링
-  buildings.forEach(b => {
-    ctx.fillStyle = '#00e5ff'; // 반도체 청색광 시각화
-    ctx.fillRect(offsetX + b.x * TILE_SZ + 2, offsetY + b.y * TILE_SZ + 2, TILE_SZ - 4, TILE_SZ - 4);
-    ctx.strokeStyle = '#ffffff';
-    ctx.strokeRect(offsetX + b.x * TILE_SZ + 2, offsetY + b.y * TILE_SZ + 2, TILE_SZ - 4, TILE_SZ - 4);
-  });
-
-  // 3. 메인 개척자(플레이어) 렌더링
-  ctx.fillStyle = '#ffe080';
-  ctx.strokeStyle = '#ffffff';
-  ctx.lineWidth = 2;
-  ctx.beginPath();
-  ctx.arc(offsetX + state.player.x * TILE_SZ + TILE_SZ/2, offsetY + state.player.y * TILE_SZ + TILE_SZ/2, TILE_SZ/2, 0, Math.PI*2);
-  ctx.fill();
-  ctx.stroke();
-}
-
-// ═══════════════════════════════════════════
-//  GAME LOGIC & TICK REFACTOR
-// ═══════════════════════════════════════════
-function nextDay() {
-  state.day++;
-
-  // 1. 자원 패시브 소모 및 건물 동작
-  let powerGain = 2;
-  buildings.forEach(b => {
-    if (b.type === 'solar_panel') {
-      powerGain += 5; // 발전기당 상시 전력 공급
-    }
-  });
-  state.res.power += powerGain;
-
-  // 숲과 돌산의 자연 획득량 보정
-  state.res.wood += 5;
-  state.res.stone += 3;
-
-  // 2. 생존 메커니즘 (신소재 기반 쉴드 체크)
-  if (state.stats.energy < 30) {
-    state.stats.survival = Math.max(0, state.stats.survival - 5);
-    addLog("⚠️ 에너지 부족 사태 발생! 지포 문명 생존율이 저하됩니다.", "warn");
-  } else {
-    state.stats.survival = Math.min(100, state.stats.survival + 2);
-  }
-
-  // 3. 자동 연구 진행 스크립트
-  if (state.researching) {
-    state.researchProg++;
-    if (state.researchProg >= 3) {
-      let tech = TECHS.find(t => t.id === state.researching);
-      state.unlockedTechs.add(state.researching);
-      addLog(`✓ 과학 성과: [${tech.name}] 거시 화학 공정 규명 완료! 신공학 설계도 해금.`, "special");
-      state.stats.tech = Math.min(100, state.stats.tech + 18);
-      state.researching = null;
-      state.researchProg = 0;
-      evalEra();
-    }
-  }
+  // 망상 화학 스펀지 패시브 가속 공식 대입
+  state.speedMultiplier = 1.0 + (state.sub.mof * 0.08) + (state.sub.hybrid * 0.2);
 
   updateUI();
-  renderTechTree();
-  renderCraftTree();
-  renderMap();
+  checkWinCondition();
 }
 
-function evalEra() {
-  if (state.unlockedTechs.has('carbon_fiber')) state.era = '신소재 우주 시대';
-  else if (state.unlockedTechs.has('si_purify')) state.era = '실리콘 반도체 시대';
-  else if (state.unlockedTechs.has('smelting')) state.era = '금속 야금 시대';
-  else if (state.unlockedTechs.has('fire')) state.era = '원시 과학 시대';
+function createFluidParticle(sc, sr, color) {
+  for (let r = 0; r < grid.length; r++) {
+    for (let c = 0; c < grid[r].length; c++) {
+      if (grid[r][c].type === 'center') {
+        particles.push({
+          x: sc * TILE_SIZE + TILE_SIZE / 2,
+          y: sr * TILE_SIZE + TILE_SIZE / 2,
+          tx: c * TILE_SIZE + TILE_SIZE / 2,
+          ty: r * TILE_SIZE + TILE_SIZE / 2,
+          color: color,
+          progress: 0
+        });
+        return;
+      }
+    }
+  }
 }
 
-function resLabel(t) { return {stone:'돌',wood:'목재',fuel:'연료',ore:'광물',power:'전력',silicon:'실리콘',polymer:'폴리에틸렌'}[t]||t; }
+function checkWinCondition() {
+  // 엔딩 체크 조건식
+  if (state.power >= 500 && state.hybridCount >= 2) {
+    document.getElementById('ending-screen').style.display = 'flex';
+  }
+}
 
 // ═══════════════════════════════════════════
-//  UI CONTROLLER
+//  GRAPHICS CONTROLLER (60FPS CANVAS LOOP)
+// ═══════════════════════════════════════════
+function render() {
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  
+  // 테크니컬 백그라운드 라인 드로잉
+  ctx.strokeStyle = 'rgba(56, 189, 248, 0.05)';
+  ctx.lineWidth = 1;
+  for (let r = 0; r < grid.length; r++) {
+    for (let c = 0; c < grid[r].length; c++) {
+      ctx.strokeRect(c * TILE_SIZE, r * TILE_SIZE, TILE_SIZE, TILE_SIZE);
+      
+      let tile = grid[r][c];
+      let tx = c * TILE_SIZE;
+      let ty = r * TILE_SIZE;
+
+      if (tile.type === 'center') {
+        ctx.fillStyle = '#1e293b';
+        ctx.fillRect(tx + 4, ty + 4, TILE_SIZE - 8, TILE_SIZE - 8);
+        ctx.strokeStyle = '#38bdf8';
+        ctx.lineWidth = 3;
+        ctx.strokeRect(tx + 6, ty + 6, TILE_SIZE - 12, TILE_SIZE - 12);
+        ctx.fillStyle = '#fff';
+        ctx.font = 'bold 11px sans-serif';
+        ctx.fillText('💻 메인코어', tx + 8, ty + 34);
+      } 
+      else if (tile.type === 'purifier') {
+        ctx.fillStyle = '#0f172a';
+        ctx.fillRect(tx + 6, ty + 6, TILE_SIZE - 12, TILE_SIZE - 12);
+        ctx.strokeStyle = '#38bdf8';
+        ctx.lineWidth = 2;
+        ctx.strokeRect(tx + 6, ty + 6, TILE_SIZE - 12, TILE_SIZE - 12);
+        ctx.fillStyle = 'rgba(56, 189, 248, 0.25)';
+        ctx.fillRect(tx + 10, ty + 20, TILE_SIZE - 20, 25);
+        ctx.fillStyle = '#e2e8f0';
+        ctx.font = '10px monospace';
+        ctx.fillText('지멘스탑', tx + 12, ty + 34);
+      }
+      else if (tile.type === 'mof_node') {
+        ctx.fillStyle = '#2e1065';
+        ctx.fillRect(tx + 6, ty + 6, TILE_SIZE - 12, TILE_SIZE - 12);
+        ctx.strokeStyle = '#c084fc';
+        ctx.lineWidth = 2;
+        ctx.strokeRect(tx + 6, ty + 6, TILE_SIZE - 12, TILE_SIZE - 12);
+        
+        ctx.strokeStyle = 'rgba(192, 132, 252, 0.5)';
+        ctx.beginPath();
+        ctx.arc(tx + TILE_SIZE/2, ty + TILE_SIZE/2, TILE_SIZE/4, 0, Math.PI*2);
+        ctx.stroke();
+        ctx.fillStyle = '#fff';
+        ctx.font = '10px monospace';
+        ctx.fillText('MOF-5', tx + 14, ty + 34);
+      }
+      else if (tile.type === 'dac_tower') {
+        ctx.fillStyle = '#022c22';
+        ctx.fillRect(tx + 6, ty + 6, TILE_SIZE - 12, TILE_SIZE - 12);
+        ctx.strokeStyle = '#34d399';
+        ctx.lineWidth = 2;
+        ctx.strokeRect(tx + 6, ty + 6, TILE_SIZE - 12, TILE_SIZE - 12);
+        ctx.fillStyle = '#34d399';
+        ctx.font = '10px monospace';
+        ctx.fillText('COF 포집', tx + 10, ty + 34);
+      }
+      else if (tile.type === 'hybrid_reactor') {
+        ctx.fillStyle = '#500730';
+        ctx.fillRect(tx + 4, ty + 4, TILE_SIZE - 8, TILE_SIZE - 8);
+        ctx.strokeStyle = '#f472b6';
+        ctx.lineWidth = 2.5;
+        ctx.strokeRect(tx + 4, ty + 4, TILE_SIZE - 8, TILE_SIZE - 8);
+        ctx.fillStyle = '#f472b6';
+        ctx.font = 'bold 10px monospace';
+        ctx.fillText('하이브리드', tx + 6, ty + 34);
+      }
+      else if (tile.type === 'pipe') {
+        ctx.fillStyle = '#334155';
+        ctx.fillRect(tx, ty + TILE_SIZE/2 - 4, TILE_SIZE, 8);
+      }
+    }
+  }
+
+  // 파티클 전달 제어 루프
+  for (let i = particles.length - 1; i >= 0; i--) {
+    let p = particles[i];
+    p.progress += 0.02;
+    let cx = p.x + (p.tx - p.x) * p.progress;
+    let cy = p.y + (p.ty - p.y) * p.progress;
+
+    ctx.fillStyle = p.color;
+    ctx.shadowBlur = 8;
+    ctx.shadowColor = p.color;
+    ctx.beginPath();
+    ctx.arc(cx, cy, 5, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.shadowBlur = 0; // 초기화
+
+    if (p.progress >= 1) particles.splice(i, 1);
+  }
+
+  requestAnimationFrame(render);
+}
+
+// ═══════════════════════════════════════════
+//  UI DATA INDUCTION & HUD INTERFACES
 // ═══════════════════════════════════════════
 function updateUI() {
-  ['stone','wood','fuel','ore','power'].forEach(r => {
-    document.getElementById('r-'+r).textContent = state.res[r];
-  });
-  document.getElementById('day-label').textContent = `Day ${state.day}`;
+  document.getElementById('mat-sicl').textContent = Math.floor(state.res.sicl);
+  document.getElementById('mat-metal').textContent = Math.floor(state.res.metal);
+  document.getElementById('mat-linker').textContent = Math.floor(state.res.linker);
+  document.getElementById('mat-h2').textContent = Math.floor(state.res.h2);
   
-  // 신소재 인벤토리 바인딩
-  document.getElementById('i-silicon').textContent = state.subMaterials.silicon;
-  document.getElementById('i-polymer').textContent = state.subMaterials.polymer;
-  document.getElementById('i-cfrp').textContent = state.subMaterials.cfrp;
-  document.getElementById('i-build-gen').textContent = state.subMaterials.builtGenerator;
+  document.getElementById('sub-silicon').textContent = state.sub.silicon.toFixed(1);
+  document.getElementById('sub-mof').textContent = state.sub.mof.toFixed(1);
+  document.getElementById('sub-cof').textContent = state.sub.cof.toFixed(1);
+  document.getElementById('sub-hybrid').textContent = state.sub.hybrid.toFixed(1);
 
-  // 플레이어 스펙 갱신
-  document.getElementById('p-speed').textContent = state.player.speed.toFixed(1) + "x";
-  
-  // 스태츠 바
-  document.getElementById('bar-survival').style.width = state.stats.survival + '%';
-  document.getElementById('val-survival').textContent = state.stats.survival;
-  document.getElementById('bar-energy').style.width = state.stats.energy + '%';
-  document.getElementById('val-energy').textContent = state.stats.energy;
-  document.getElementById('bar-tech').style.width = state.stats.tech + '%';
-  document.getElementById('val-tech').textContent = state.stats.tech;
-
-  document.getElementById('era-badge').textContent = state.era;
+  document.getElementById('hud-power').textContent = Math.floor(state.power) + " kW";
+  document.getElementById('hud-dac').textContent = state.dac.toFixed(1) + " ppm/s";
+  document.getElementById('hud-speed').textContent = state.speedMultiplier.toFixed(2) + "x";
 }
 
 function renderTechTree() {
-  const el = document.getElementById('rtab-tech');
-  el.innerHTML = '<div class="tech-era">연구 가능한 정밀 화학 공정</div>';
+  const container = document.getElementById('tech-tree-container');
+  container.innerHTML = '';
   
   TECHS.forEach(t => {
-    let done = state.unlockedTechs.has(t.id);
-    let active = state.researching === t.id;
-    let reqMet = t.req.every(r => state.unlockedTechs.has(r));
+    let isReqMet = !t.req || TECHS.find(x => x.id === t.req).unlocked;
+    let affordable = Object.entries(t.cost).every(([k, v]) => state.res[k] >= v);
     
-    let cls = "game-card";
-    if (done) cls += " done";
-    if (active) cls += " active-research";
-    if (!done && !reqMet) cls += " locked";
+    let card = document.createElement('div');
+    card.className = `tech-card ${t.unlocked ? 'unlocked' : ''}`;
+    if (!isReqMet && !t.unlocked) card.style.opacity = '0.25';
 
-    let costStr = Object.entries(t.costs).map(([r,v]) => `<span class="cost-tag">${resLabel(r)} ${v}</span>`).join('');
-    
-    el.innerHTML += `
-      <div class="${cls}" onclick="selectObject('tech', '${t.id}')">
-        <div class="card-title">${t.name} ${done?'(완료)':active?'(연구중)':''}</div>
-        <div class="card-formula">${t.formula}</div>
-        <div class="card-desc">${t.desc}</div>
-        <div class="card-costs">${costStr}</div>
-      </div>
-    `;
-  });
-}
+    let costStr = Object.entries(t.cost).map(([k,v]) => `${k.toUpperCase()}: ${v}`).join(', ');
 
-function renderCraftTree() {
-  const el = document.getElementById('craft-list');
-  el.innerHTML = '<div class="tech-era">신소재 융합 가공식 목록</div>';
-
-  CRAFTS.forEach(c => {
-    let ready = state.unlockedTechs.has(c.reqTech);
-    let cls = "game-card";
-    if (!ready) cls += " locked";
-
-    let costStr = Object.entries(c.costs).map(([r,v]) => `<span class="cost-tag">${resLabel(r)} ${v}</span>`).join('');
-
-    el.innerHTML += `
-      <div class="${cls}" onclick="selectObject('craft', '${c.id}')">
-        <div class="card-title">${c.name}</div>
-        <div class="card-formula">${c.formula}</div>
-        <div class="card-desc">${c.desc}</div>
-        <div class="card-costs">${costStr}</div>
-      </div>
-    `;
-  });
-}
-
-function selectObject(mode, id) {
-  let box = document.getElementById('detail-box');
-  box.className = "";
-  
-  if (mode === 'tech') {
-    let t = TECHS.find(x => x.id === id);
-    let affordable = Object.entries(t.costs).every(([r,v]) => state.res[r] >= v);
-    let reqMet = t.req.every(r => state.unlockedTechs.has(r));
-    let done = state.unlockedTechs.has(id);
-
-    box.innerHTML = `
-      <div class="db-title">${t.name}</div>
-      <p style="font-size:11px; color:#aaa; margin-bottom:6px;">화학 결합 메커니즘 연쇄 분석</p>
-      <button class="db-btn" id="act-btn" ${(!affordable || !reqMet || done || state.researching)?'disabled':''}>연구 착수 (기초 자원 소모)</button>
-    `;
-    
-    document.getElementById('act-btn').onclick = () => {
-      Object.entries(t.costs).forEach(([r,v]) => state.res[r] -= v);
-      state.researching = id;
-      state.researchProg = 0;
-      addLog(`연구 개시: [${t.name}] 프로젝트 연쇄 반응 계산 분석기에 진입합니다.`, "info");
-      updateUI(); renderTechTree(); selectObject('tech', id);
-    };
-  } else {
-    let c = CRAFTS.find(x => x.id === id);
-    let hasTech = state.unlockedTechs.has(c.reqTech);
-    // 자원 체크 (subMaterial 또는 일반 자원 연동형 처리)
-    let affordable = Object.entries(c.costs).every(([r,v]) => {
-      if (state.res[r] !== undefined) return state.res[r] >= v;
-      if (state.subMaterials[r] !== undefined) return state.subMaterials[r] >= v;
-      return false;
-    });
-
-    box.innerHTML = `
-      <div class="db-title">${c.name}</div>
-      <p style="font-size:11px; color:#aaa; margin-bottom:6px;">가공 및 융합 결과물 획득</p>
-      <button class="db-btn" id="act-btn" ${(!affordable || !hasTech)?'disabled':''}>합성 및 사출하기</button>
+    card.innerHTML = `
+      <div style="font-weight:bold; font-size:13px; color:${t.unlocked?'var(--accent-green)':'#fff'}">${t.name}</div>
+      <div class="tech-formula">${t.formula}</div>
+      <div style="font-size:11px; color:var(--text-muted); margin-bottom:6px;">${t.desc}</div>
+      <div style="font-size:10px; font-family:monospace; color:var(--accent-orange)">비용 소모 [ ${costStr} ]</div>
     `;
 
-    document.getElementById('act-btn').onclick = () => {
-      // 비용 감산
-      Object.entries(c.costs).forEach(([r,v]) => {
-        if (state.res[r] !== undefined) state.res[r] -= v;
-        else if (state.subMaterials[r] !== undefined) state.subMaterials[r] -= v;
-      });
-      
-      // 결과 부여
-      if (c.type === 'material') {
-        state.subMaterials[c.target]++;
-        addLog(`소재 합성공학: 정밀 화학 변환을 통해 [${resLabel(c.target)}] 1개를 성공적으로 사출했습니다.`, "success");
-        
-        // 신소재 특성 반영 특수 트리거!!
-        if (c.target === 'cfrp') {
-          state.player.speed += 0.4; // 탄소 섬유 장착으로 가벼워져 기동력 상승!!
-          addLog("🚀 신소재 이펙트: 개척자가 [탄소 복합재 프레임]을 신체에 증폭 장착하여 이동속도가 영구 상승합니다!", "special");
+    if (!t.unlocked && isReqMet) {
+      card.onclick = () => {
+        if (affordable) {
+          Object.entries(t.cost).forEach(([k, v]) => state.res[k] -= v);
+          t.unlocked = true;
+          addLog(`🔬 핵심 공정 연구 성공: [${t.name}] 분자 제어 메커니즘을 획득했습니다.`, 'success');
+          renderTechTree();
+          updateUI();
+        } else {
+          addLog(`❌ 화학적 연산 가동 불가: 연구에 필요한 재료 탱크 배낭이 부족합니다.`, 'warn');
         }
-      } else {
-        state.subMaterials[c.target]++;
-        addLog(`구조물 제작 완료: 배낭에 설치 가능한 [${c.name}] 아이템이 보관되었습니다. 맵에 서서 스페이스바를 누르세요!`, "special");
-      }
-      
-      updateUI();
-      renderCraftTree();
-      selectObject('craft', id);
-    };
-  }
+      };
+    }
+    container.appendChild(card);
+  });
 }
 
-function switchRTab(tab, btn) {
-  document.querySelectorAll('.rtab').forEach(b=>b.classList.remove('active'));
-  document.querySelectorAll('.rtab-content').forEach(c=>c.classList.remove('active'));
+document.getElementById('build-menu').addEventListener('click', e => {
+  let btn = e.target.closest('.build-btn');
+  if (!btn) return;
+  document.querySelectorAll('.build-btn').forEach(b => b.classList.remove('active'));
   btn.classList.add('active');
-  document.getElementById('rtab-'+tab).classList.add('active');
-}
+  state.currentMode = btn.dataset.mode;
+});
+
+canvas.addEventListener('click', e => {
+  const rect = canvas.getBoundingClientRect();
+  const x = e.clientX - rect.left;
+  const y = e.clientY - rect.top;
+  
+  const c = Math.floor(x / TILE_SIZE);
+  const r = Math.floor(y / TILE_SIZE);
+  
+  if (r >= 0 && r < grid.length && c >= 0 && c < grid[0].length) {
+    if (state.currentMode === 'inspect') {
+      addLog(`🔍 정밀 센서 모니터링 [행:${r}, 열:${c}] -> 타일 성분: [${grid[r][c].type}]`, 'system');
+      return;
+    }
+    
+    // 선행 기술 검사 문맥 확장
+    if (state.currentMode === 'build_purifier' && !TECHS.find(t=>t.id==='si_purify').unlocked) {
+      addLog("❌ 인프라 제한: 지멘스 공정 설계 배선도가 아직 해금되지 않았습니다.", "warn"); return;
+    }
+    if (state.currentMode === 'build_mof_node' && !TECHS.find(t=>t.id==='mof_5').unlocked) {
+      addLog("❌ 인프라 제한: MOF-5 나노 네트워크 합성 특허 연구가 필요합니다.", "warn"); return;
+    }
+    if (state.currentMode === 'build_dac_tower' && !TECHS.find(t=>t.id==='cof_999').unlocked) {
+      addLog("❌ 인프라 제한: COF 다공성 탄소 분자체 포집 기술이 잠겨있습니다.", "warn"); return;
+    }
+    if (state.currentMode === 'build_hybrid_reactor' && !TECHS.find(t=>t.id==='hybrid_mesh').unlocked) {
+      addLog("❌ 인프라 제한: MOF-COF 하이브리드 인터커넥트 융합 공학 연구가 완료되어야 합니다.", "warn"); return;
+    }
+
+    if (grid[r][c].type !== 'empty') {
+      addLog("❌ 공정 배치 오류: 이미 다른 설비가 부지를 점유 중입니다.", "warn"); return;
+    }
+
+    // 자원 차감 연산 대폭 확장
+    if (state.currentMode === 'build_purifier' && state.res.sicl >= 30 && state.res.h2 >= 5) {
+      state.res.sicl -= 30; state.res.h2 -= 50; grid[r][c] = { type: 'purifier' };
+      addLog(`🏭 설비 준공: 지멘스 환원반응 정련소를 기동합니다. 대량의 규소를 분리합니다.`, 'success');
+    } 
+    else if (state.currentMode === 'build_mof_node' && state.res.metal >= 20 && state.res.linker >= 20) {
+      state.res.metal -= 20; state.res.linker -= 20; grid[r][c] = { type: 'mof_node' };
+      addLog(`🌀 망상 복합화 완료: Zinc 금속 클러스터와 BDC 링커를 융합하여 MOF-5 결정을 구성했습니다.`, 'success');
+    }
+    else if (state.currentMode === 'build_dac_tower' && state.res.linker >= 30 && state.sub.silicon >= 10) {
+      state.res.linker -= 30; state.sub.silicon -= 10; grid[r][c] = { type: 'dac_tower' };
+      addLog(`🌲 환경 공학 활성화: COF-999 기반의 아민 수식 직접 대기 포집(DAC) 타워를 완공했습니다.`, 'special');
+    }
+    else if (state.currentMode === 'build_hybrid_reactor' && state.sub.mof >= 10 && state.sub.cof >= 10) {
+      state.sub.mof -= 10; state.sub.cof -= 10; grid[r][c] = { type: 'hybrid_reactor' };
+      state.hybridCount++;
+      addLog(`🧪 초정밀 융합: MOF와 COF 복합 이종구조 원자로를 점화했습니다! 초고전도성 분자 에너지가 출력됩니다.`, 'special');
+    } else {
+      addLog("❌ 인프라 구축 실패: 소요 원재료 가스가 계통에 부족합니다.", "warn");
+    }
+    updateUI();
+  }
+});
 
 function addLog(msg, type) {
-  const el = document.getElementById('bottom-log');
+  const p = document.getElementById('log-panel');
   const div = document.createElement('div');
-  div.className = 'log-line '+(type||'');
-  div.textContent = `[연도 기록국] ${msg}`;
-  el.appendChild(div);
-  el.scrollTop = el.scrollHeight;
+  div.className = 'log-entry';
+  div.innerHTML = `[CORE LOG] <span class="log-text ${type||''}">${msg}</span>`;
+  p.appendChild(div);
+  p.scrollTop = p.scrollHeight;
 }
 
-// ═══════════════════════════════════════════
-//  INITIALIZER
-// ═══════════════════════════════════════════
-generateWorld();
-resizeCanvas();
-window.addEventListener('resize', resizeCanvas);
-updateUI();
+function resize() {
+  const container = document.getElementById('canvas-container');
+  canvas.width = container.clientWidth;
+  canvas.height = container.clientHeight;
+  initGrid();
+}
+
+window.addEventListener('resize', resize);
+resize();
+render();
+setInterval(gameTick, 1000);
 renderTechTree();
-renderCraftTree();
+updateUI();
 </script>
 </body>
 </html>
