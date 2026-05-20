@@ -3,1012 +3,372 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>망상화학 미니 포함: 에이전트 오토메이션 (Oxygen Reticular Lab)</title>
+<title>망상화학 미니 포함 (캐릭터 시각화 패치)</title>
 <style>
 :root {
-  --bg-dark: #0b0c10;
-  --bg-panel: #141622;
-  --bg-card: #1f2238;
+  --bg-dark: #0f111a;
+  --bg-panel: #161925;
+  --bg-card: #202438;
   --ui-blue: #38bdf8;
   --ui-green: #4ade80;
-  --ui-orange: #fb923c;
-  --ui-purple: #c084fc;
-  --ui-pink: #f472b6;
-  --text-main: #f1f5f9;
+  --ui-yellow: #f59e0b;
 }
 
 * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Malgun Gothic', sans-serif; user-select: none; }
-body { background: var(--bg-dark); color: var(--text-main); width: 100vw; height: 100vh; overflow: hidden; display: flex; flex-direction: column; }
+body { background: var(--bg-dark); color: #f1f5f9; width: 100vw; height: 100vh; overflow: hidden; display: flex; flex-direction: column; }
 
-/* ── LAYOUT STRUCTURE ── */
 header {
-  height: 60px; background: var(--bg-panel); border-bottom: 3px solid #292d45;
-  display: flex; align-items: center; justify-content: space-between; padding: 0 20px; z-index: 10;
+  height: 50px; background: var(--bg-panel); border-bottom: 3px solid #23273a;
+  display: flex; align-items: center; justify-content: space-between; padding: 0 20px;
 }
-.main-wrapper { flex: 1; display: grid; grid-template-columns: 320px 1fr; height: calc(100vh - 60px); overflow: hidden; }
+.game-container { flex: 1; display: grid; grid-template-columns: 280px 1fr; height: calc(100vh - 50px); }
 
-/* ── SIDEBAR & UI ── */
-.sidebar { background: var(--bg-panel); border-right: 3px solid #292d45; padding: 20px; display: flex; flex-direction: column; gap: 20px; overflow-y: auto; }
-.section-title { font-size: 12px; font-weight: bold; color: var(--ui-blue); letter-spacing: 2px; text-transform: uppercase; margin-bottom: 8px; border-left: 3px solid var(--ui-blue); padding-left: 8px; }
-.storage-panel { background: var(--bg-card); padding: 14px; border-radius: 8px; border: 1px solid #2e3456; font-size: 13px; display: flex; flex-direction: column; gap: 6px; }
-.stat-row { display: flex; justify-content: space-between; align-items: center; }
-.stat-val { font-weight: bold; }
+/* SIDEBAR */
+.sidebar { background: var(--bg-panel); border-right: 3px solid #23273a; padding: 15px; display: flex; flex-direction: column; gap: 15px; }
+.panel-title { font-size: 12px; font-weight: bold; color: var(--ui-blue); letter-spacing: 1px; margin-bottom: 4px; }
+.res-box { background: var(--bg-card); padding: 10px; border-radius: 6px; border: 2px solid #2d324d; font-size: 13px; }
+.res-line { display: flex; justify-content: space-between; margin-bottom: 5px; }
 
-/* ── BUILD MENU BUTTONS ── */
-.action-grid { display: flex; flex-direction: column; gap: 8px; }
-.action-btn {
-  background: var(--bg-card); border: 2px solid #2e3456; color: #fff; padding: 12px; border-radius: 8px;
-  text-align: left; cursor: pointer; transition: all 0.15s ease; position: relative; overflow: hidden;
+/* BUILD BUTTONS */
+.btn-grid { display: flex; flex-direction: column; gap: 8px; }
+.build-btn {
+  background: #202438; border: 2px solid #313754; color: #fff; padding: 10px; border-radius: 6px;
+  text-align: left; cursor: pointer; transition: 0.1s;
 }
-.action-btn:hover { background: #282c47; border-color: var(--ui-blue); }
-.action-btn.active { background: #1e3a8a; border-color: var(--ui-green); box-shadow: 0 0 12px rgba(74,222,128,0.25); }
-.btn-lbl { font-weight: bold; font-size: 13px; display: flex; justify-content: space-between; }
-.btn-sub { font-size: 11px; color: #94a3b8; margin-top: 4px; line-height: 1.4; }
+.build-btn:hover { background: #2b314a; border-color: var(--ui-blue); }
+.build-btn.active { background: #1e3a8a; border-color: var(--ui-green); box-shadow: 0 0 8px rgba(74,222,128,0.3); }
+.btn-desc { font-size: 11px; color: #94a3b8; margin-top: 3px; line-height: 1.3; }
 
-/* ── TAB NAVIGATION ── */
-.tab-header { display: flex; gap: 4px; background: #0f111a; padding: 4px; border-radius: 6px; }
-.tab-trigger { flex: 1; padding: 6px; background: transparent; border: none; color: #94a3b8; font-size: 11px; font-weight: bold; cursor: pointer; border-radius: 4px; }
-.tab-trigger.active { background: var(--bg-card); color: #fff; }
-.tab-content { display: none; flex-direction: column; gap: 8px; }
-.tab-content.active { display: flex; }
-
-/* ── GAME VIEWPORT ── */
-#canvas-container { position: relative; width: 100%; height: 100%; background: #06070a; overflow: hidden; }
+/* VIEWPORT */
+#viewport-container { position: relative; background: #090a10; overflow: hidden; width: 100%; height: 100%; }
 canvas { display: block; width: 100%; height: 100%; }
 
-/* ── FLOATING OVERLAYS ── */
-.hud-card { position: absolute; background: rgba(20,22,34,0.9); backdrop-filter: blur(6px); border: 1px solid #2e3456; padding: 12px 16px; border-radius: 8px; font-size: 12px; pointer-events: none; }
-.hud-top-left { top: 20px; left: 20px; display: flex; flex-direction: column; gap: 6px; }
-.hud-bottom-right { bottom: 20px; right: 20px; max-width: 300px; line-height: 1.5; }
-.gas-indicator { display: flex; align-items: center; gap: 8px; font-size: 11px; }
-.gas-badge { width: 12px; height: 12px; border-radius: 3px; }
-
-/* ── ALERTS & LOGS ── */
-.log-box { background: #0f111a; border-radius: 6px; padding: 8px; height: 110px; overflow-y: auto; font-family: monospace; font-size: 11px; color: #a7f3d0; line-height: 1.4; border: 1px solid #1e293b; }
-
-/* ── PROGRESS BAR ── */
-.p-bar-bg { width: 100%; background: #0f111a; height: 6px; border-radius: 3px; margin-top: 4px; overflow: hidden; }
-.p-bar-fill { height: 100%; background: var(--ui-blue); width: 0%; transition: width 0.1s linear; }
+/* HUD ANALYSIS */
+.analysis-hud { position: absolute; bottom: 15px; left: 15px; background: rgba(22,25,37,0.9); border: 2px solid #2d324d; padding: 10px; border-radius: 6px; font-size: 11px; display: flex; flex-direction: column; gap: 4px; pointer-events: none; }
 </style>
 </head>
 <body>
 
   <header>
-    <div style="display:flex; align-items:center; gap:12px;">
-      <span style="font-size:18px; font-weight:900; color:#f43f5e; letter-spacing:0.5px;">🧑‍🔬 OXYGEN RETICULAR LAB : 복제인간 연구소</span>
-      <span style="font-size:11px; background:#1e3a8a; color:#93c5fd; padding:3px 8px; border-radius:4px; font-weight:bold; border:1px solid #2563eb;">v2.0 에이전트 라이브</span>
+    <div style="display:flex; align-items:center; gap:10px;">
+      <span style="font-size:15px; font-weight:900; color:#f43f5e;">🧑‍🔬 망상화학 미니 포함!</span>
+      <span style="font-size:11px; background:#1e40af; padding:2px 6px; border-radius:4px; font-weight:bold;">실험실 모드</span>
     </div>
-    <div style="display:flex; gap:30px; font-size:13px; align-items:center;">
-      <div>🏃 대기 중인 연구원: <span id="global-idle-minions" style="color:var(--ui-pink); font-weight:bold;">0명</span> / <span id="global-total-minions" style="color:#fff;">5명</span></div>
-      <div>⚡ 중앙 발전 그리드: <span id="global-power" style="color:var(--ui-orange); font-weight:bold;">500 / 500 W</span></div>
-      <div>🧼 기지 평균 오염도: <span id="global-pollution" style="color:var(--ui-green); font-weight:bold;">안전 (0%)</span></div>
+    <div style="display:flex; gap:20px; font-size:13px;">
+      <div>🔬 합성된 실리콘 소자: <span id="hud-si" style="color:var(--ui-blue); font-weight:bold;">0개</span></div>
+      <div>🏃 가동 연구원 수: <span style="color:#f472b6; font-weight:bold;">4명 확실히 대기 중</span></div>
     </div>
   </header>
 
-  <div class="main-wrapper">
+  <div class="game-container">
     <div class="sidebar">
+      <div>
+        <div class="panel-title">🎒 연구소 원료 탱크</div>
+        <div class="res-box">
+          <div class="res-line"><span>🪨 사염화규소 ($SiCl_4$):</span><span id="r-sicl" style="font-weight:bold; color:var(--ui-blue);">100</span></div>
+          <div class="res-line"><span>⛽ 캐리어 수소 ($H_2$):</span><span id="r-h2" style="font-weight:bold; color:#fda4af;">40</span></div>
+          <div class="res-line"><span>🧱 아연 및 링커 소재:</span><span id="r-mat" style="font-weight:bold; color:#c084fc;">30</span></div>
+        </div>
+      </div>
+
+      <div>
+        <div class="panel-title">🛠️ 화학 공정 장치 배치</div>
+        <div class="btn-grid" id="build-menu">
+          <button class="build-btn active" data-mode="inspect">🔍 구경하기 및 지시 모드</button>
+          <button class="build-btn" data-mode="build_factory">🏭 지멘스 환원 정련소 건설<div class="btn-desc">SiCl₄ + H₂ → 실리콘 소자 생산<br><span style="color:#f87171;">(초록색 CO₂, 노란색 HCl 독가스 배출!)</span></div></button>
+          <button class="build-btn" data-mode="build_mof">🧽 다공성 MOF-5 가스 필터<div class="btn-desc">주변 노란색 독가스($HCl$)를 흡수하여 수소 가스($H_2$)로 환원 재생합니다.</div></button>
+        </div>
+      </div>
       
-      <div class="tab-header">
-        <button class="tab-trigger active" onclick="switchTab('build')">🛠️ 건설 및 지시</button>
-        <button class="tab-trigger" onclick="switchTab('research')">🔬 과학 원소 연구</button>
-        <button class="tab-trigger" onclick="switchTab('status')">📊 연구실 상태</button>
+      <div style="margin-top:auto; font-size:11px; color:#64748b; line-height:1.4;">
+        * 팁: 화면 빈 곳을 클릭하여 공장과 필터를 지어보세요! 가스가 차오르면 연구원들이 기침을 하니 MOF 필터로 공기를 정화해 주어야 합니다.
       </div>
-
-      <div id="tab-build" class="tab-content active">
-        <div class="section-title">지시 지령 모드</div>
-        <div class="action-grid">
-          <button class="action-btn active" data-mode="inspect">
-            <div class="btn-lbl">🔍 구경 및 연구원 정보 모드</div>
-            <div class="btn-sub">캐릭터를 클릭하면 현재 수행 중인 작업과 가방 내부를 확인합니다.</div>
-          </button>
-          <button class="action-btn" data-mode="dig">
-            <div class="btn-lbl">⛏️ 천연 광석 타일 채굴 지령</div>
-            <div class="btn-sub">흙, 금속 이온광, 링커 가속 노드 타일을 마우스로 클릭해 채굴 지시를 내립니다.</div>
-          </button>
-        </div>
-
-        <div class="section-title">화학 설비 인프라 청사진</div>
-        <div class="action-grid">
-          <button class="action-btn" data-mode="build_storage">
-            <div class="btn-lbl">📦 중앙 원료 간이 보관소 <span style="color:var(--ui-blue)">[흙 10]</span></div>
-            <div class="btn-sub">연구원들이 주변에 흩어진 광물 자원을 가져와 통합 보관하는 물류 중심지.</div>
-          </button>
-          <button class="action-btn" data-mode="build_refinery">
-            <div class="btn-lbl">🏭 규소 기상 환원 정련소 <span style="color:var(--ui-purple)">[금속 20 / 흙 15]</span></div>
-            <div class="btn-sub">사염화규소를 환원시켜 실리콘 웨이퍼를 생산합니다. 가동 시 독성 HCl 가스 발생!</div>
-          </button>
-          <button class="action-btn" data-mode="build_mof">
-            <div class="btn-lbl">🧽 다공성 MOF-5 가스 필터 <span style="color:var(--ui-orange)">[금속 15 / 링커 15]</span></div>
-            <div class="btn-sub">기공 사이에 배위 결합력을 발생시켜 주변의 독성 가스를 빨아들이고 수소로 재생합니다.</div>
-          </button>
-          <button class="action-btn" data-mode="build_cof">
-            <div class="btn-lbl">🌲 COF-999 공기 정화 타워 <span style="color:var(--ui-pink)">[링커 25]</span></div>
-            <div class="btn-sub">아민기로 개질된 유기 골격체가 대량의 이산화탄소를 분리 포집하여 구조재로 변환합니다.</div>
-          </button>
-        </div>
-      </div>
-
-      <div id="tab-research" class="tab-content">
-        <div class="section-title">화학공학 연구 트리</div>
-        <div class="action-grid">
-          <div style="background:var(--bg-card); padding:12px; border-radius:8px; border:1px solid #2e3456;">
-            <div style="font-weight:bold; font-size:12px; color:var(--ui-orange);">⚙️ 복제 연구원 모터 기동력 강화</div>
-            <div style="font-size:11px; color:#94a3b8; margin:4px 0 8px 0;">연구원들의 기본 이동 속도 및 작업 속도가 35% 증가합니다.</div>
-            <button class="action-btn" style="width:100%; padding:6px; text-align:center;" onclick="startResearch('speed', 40)">연구 시작 [실리콘 5 필요]</button>
-            <div class="p-bar-bg"><div id="res-bar-speed" class="p-bar-fill"></div></div>
-          </div>
-
-          <div style="background:var(--bg-card); padding:12px; border-radius:8px; border:1px solid #2e3456;">
-            <div style="font-weight:bold; font-size:12px; color:var(--ui-pink);">🔬 메조포러스 격자 구조 정밀화</div>
-            <div style="font-size:11px; color:#94a3b8; margin:4px 0 8px 0;">MOF 및 COF 구조체의 가스 정화 범위와 흡착 속도가 2배로 늘어납니다.</div>
-            <button class="action-btn" style="width:100%; padding:6px; text-align:center;" onclick="startResearch('mof_tech', 60)">연구 시작 [실리콘 8 필요]</button>
-            <div class="p-bar-bg"><div id="res-bar-mof_tech" class="p-bar-fill"></div></div>
-          </div>
-        </div>
-      </div>
-
-      <div id="tab-status" class="tab-content">
-        <div class="section-title">창고 메인 데이터 리스트</div>
-        <div class="storage-panel">
-          <div class="stat-row"><span>🟫 정제되지 않은 흙 자석:</span><span id="st-dirt" class="stat-val" style="color:#b45309;">0 kg</span></div>
-          <div class="stat-row"><span>🧱 금속 이온 원광 (Zn/Cu):</span><span id="st-rawmetal" class="stat-val" style="color:var(--ui-purple);">0 kg</span></div>
-          <div class="stat-row"><span>🧪 유기 화합물 링커 수지:</span><span id="st-rawlinker" class="stat-val" style="color:var(--ui-pink);">0 kg</span></div>
-          <div class="stat-row" style="border-top:1px solid #2e3456; padding-top:6px; margin-top:4px;"><span>💿 초고순도 실리콘 웨이퍼:</span><span id="st-silicon" class="stat-val" style="color:var(--ui-blue);">0 개</span></div>
-          <div class="stat-row"><span>💎 탄소 결정 고분자 고체:</span><span id="st-carbon" class="stat-val" style="color:var(--ui-green);">0 개</span></div>
-        </div>
-
-        <div class="section-title">작업 로그 브로드캐스트</div>
-        <div class="log-box" id="log-console">
-          - 연구실 자동화 관제소 가동 시작...<br>
-          - 5명의 복제인간 연구원이 대기 중입니다.<br>
-        </div>
-      </div>
-
     </div>
 
-    <div id="canvas-container">
+    <div id="viewport-container">
       <canvas id="game-canvas"></canvas>
-
-      <div class="hud-card hud-top-left">
-        <div style="font-weight:bold; color:#fff; font-size:12px; margin-bottom:2px;">📡 분자 가스 센서 정보</div>
-        <div class="gas-indicator"><div class="gas-badge" style="background:rgba(74,222,128,0.7);"></div><span>이산화탄소 ($CO_2$ 온실가스): <span id="hud-val-co2" style="font-weight:bold; color:var(--ui-green);">0 ppm</span></span></div>
-        <div class="gas-indicator"><div class="gas-badge" style="background:rgba(234,179,8,0.7);"></div><span>염화수소 ($HCl$ 강산독성): <span id="hud-val-hcl" style="font-weight:bold; color:var(--ui-orange);">0 ppm</span></span></div>
-      </div>
-
-      <div class="hud-card hud-bottom-right">
-        <strong>🎮 조작 가이드</strong><br>
-        • 빈 타일을 <strong>마우스 우클릭 드래그</strong>하여 화면을 부드럽게 스크롤할 수 있습니다.<br>
-        • 좌측 메뉴에서 <strong>[⛏️ 채굴 지령]</strong>을 누르고 맵의 단단한 블록들을 클릭해 보세요! 연구원들이 달려가 직접 캐서 기지로 나릅니다.<br>
-        • 공장을 지어 실리콘을 모으고 상단의 과학 기술 연구 트리를 정복하세요!
+      
+      <div class="analysis-hud">
+        <div style="font-weight:bold; color:#fff; margin-bottom:2px;">📡 대기 오염 분석 센서</div>
+        <div>🟢 이산화탄소 ($CO_2$ 농도): <span id="h-co2" style="font-weight:bold; color:var(--ui-green);">0%</span></div>
+        <div>🟡 염화수소 ($HCl$ 독성치): <span id="h-hcl" style="font-weight:bold; color:var(--ui-yellow);">0%</span></div>
       </div>
     </div>
   </div>
 
 <script>
-// ══════════════════════════════════════════════════════════════════════════════
-//  1. GLOBAL CONSTANTS & GAME STATE CONFIG
-// ══════════════════════════════════════════════════════════════════════════════
-const TILE_SIZE = 48;
-const MAP_WIDTH = 32;
-const MAP_HEIGHT = 32;
-
-// 가상 실험실 중앙 제어 경제 상태구조체
-const state = {
-  // 인벤토리 자원 수치
-  resources: { dirt: 40, rawmetal: 25, rawlinker: 25, silicon: 0, carbon: 0 },
-  // 기지 에너지 유체 수치
-  power: 500, maxPower: 500,
-  pollutionRatio: 0,
-  globalCo2: 0, globalHcl: 0,
-  
-  // 테크놀로지 연구 트리 상태 변수
-  research: { current: null, progress: 0, target: 100, speedMultiplier: 1.0, mofRangeMultiplier: 1.0 },
-  
-  // 마우스 컨트롤 조작계 인터페이스 변수
-  currentMode: 'inspect',
-  selectedMinion: null,
-  
-  // 카메라 뷰 포트 오프셋 위치
-  camera: { x: 40, y: 30, isDragging: false, startX: 0, startY: 0 }
-};
-
-// 타일 원소 속성 정의 딕셔너리
-const TILE_TYPES = {
-  empty:      { id: 0, name: "진공 대기", color: "#06070a", solid: false },
-  dirt:       { id: 1, name: "일반 흙 퇴적물", color: "#4527a0", solid: true }, // 가시성을 위해 보라/초록 가미된 공학적 색 조합 채용
-  rawmetal:   { id: 2, name: "아연 금속 광맥", color: "#6b21a8", solid: true },
-  rawlinker:  { id: 3, name: "결합체 유기물 층", color: "#9d174d", solid: true },
-  bedrock:    { id: 4, name: "단단한 하부 기반암", color: "#1e293b", solid: true }
-};
-
-// 맵 및 엔티티 배열 정의 컨테이너
-let worldMap = [];
-let minions = [];
-let buildings = [];
-let jobQueue = []; // 연구원들에게 실시간 분배될 글로벌 작업 큐
-
+const TILE_SIZE = 55;
 let canvas, ctx;
+let worldGrid = [];
+let minions = [];
+let currentMode = 'inspect';
 
-// ══════════════════════════════════════════════════════════════════════════════
-//  2. WORLD MAP GENERATOR (무작위 지형 및 매장 자원 인프라 세팅)
-// ══════════════════════════════════════════════════════════════════════════════
-function generateLabWorld() {
-  for (let r = 0; r < MAP_HEIGHT; r++) {
-    worldMap[r] = [];
-    for (let c = 0; c < MAP_WIDTH; c++) {
-      let type = 'dirt';
-      
-      // 기지 중심부(중앙 그리드 타운)는 통행이 원활하도록 빈 공간 확정
-      let distToCenter = Math.sqrt(Math.pow(r - MAP_HEIGHT/2, 2) + Math.pow(c - MAP_WIDTH/2, 2));
-      
-      if (distToCenter < 5) {
-        type = 'empty';
-      } else if (r === 0 || r === MAP_HEIGHT - 1 || c === 0 || c === MAP_WIDTH - 1) {
-        type = 'bedrock'; // 맵 외곽 테두리는 뚫을 수 없는 기반암 처리
+// 핵심 자원 및 환경 가스 수치
+let res = { sicl: 100, h2: 40, mat: 30, silicon: 0 };
+let environment = { co2: 10, hcl: 5 }; 
+
+// 건물이 설치된 좌표를 기록하는 리스트
+let buildings = [];
+
+// ═══════════════════════════════════════════
+//  👷 귀여운 캡슐 연구원 클래스
+// ═══════════════════════════════════════════
+class Minion {
+  constructor(x, y, name, color) {
+    this.x = x; this.y = y;
+    this.name = name; this.color = color;
+    this.vx = (Math.random() - 0.5) * 1.5;
+    this.vy = (Math.random() - 0.5) * 1.5;
+    this.bubbleTimer = 0;
+    this.bubbleText = "";
+  }
+  
+  update() {
+    this.x += this.vx; this.y += this.vy;
+    
+    // 화면 크기를 벗어나지 않도록 안전 가두기 (캔버스 크기 기준 예외 처리)
+    let boundX = canvas ? canvas.width : 600;
+    let boundY = canvas ? canvas.height : 500;
+    
+    if (this.x < 30) { this.x = 30; this.vx *= -1; }
+    if (this.x > boundX - 30) { this.x = boundX - 30; this.vx *= -1; }
+    if (this.y < 30) { this.y = 30; this.vy *= -1; }
+    if (this.y > boundY - 30) { this.y = boundY - 30; this.vy *= -1; }
+    
+    // 귀여운 무작위 말풍선 타이머
+    if (this.bubbleTimer > 0) {
+      this.bubbleTimer--;
+    } else if (Math.random() < 0.005) {
+      this.bubbleTimer = 110;
+      if (environment.hcl > 40) {
+        this.bubbleText = "콜록..! HCl 가스 매워!!😭";
       } else {
-        // 무작위 확률 분포 계산을 통한 촉매 및 유기물 소스 배치 확률 엔진
-        let rand = Math.random();
-        if (rand < 0.08) type = 'rawmetal';
-        else if (rand < 0.07) type = 'rawlinker';
-        else if (rand < 0.12) type = 'empty'; // 군데군데 동굴 배치
+        const phrases = ["열심히 조립 중!", "화학공학 재밌당", "산소 미포함 컨셉!", "캐릭터 등장!", "MOF 최고야"];
+        this.bubbleText = phrases[Math.floor(Math.random() * phrases.length)];
       }
-      
-      worldMap[r][c] = {
-        type: type,
-        minedProgress: 0,
-        co2: 0,
-        hcl: 0,
-        markedForDig: false
-      };
     }
   }
   
-  // 스타팅 코어 허브 기지 중앙 최적의 장소에 자동 드롭 인스턴스화
-  let midR = Math.floor(MAP_HEIGHT / 2);
-  let midC = Math.floor(MAP_WIDTH / 2);
-  
-  buildings.push({
-    id: 'core_hub', r: midR, c: midC, type: 'core_hub', name: '중앙 오퍼레이션 허브 기지',
-    inputs: {}, inventory: { dirt: 0, rawmetal: 0, rawlinker: 0 }
-  });
-  
-  // 5인의 귀여운 복제 유전공학 연구원(Minions) 생성 및 인공지능 부여
-  const minionNames = ["듀플-야기", "듀플-화공", "듀플-소재", "듀플-나노", "듀플-구조"];
-  const minionColors = ["#f472b6", "#60a5fa", "#34d399", "#fbbf24", "#a78bfa"];
-  
-  for (let i = 0; i < 5; i++) {
-    minions.push(new MinionAgent(
-      (midC * TILE_SIZE) + 24 + (i * 12 - 24),
-      (midR * TILE_SIZE) + 24,
-      minionNames[i],
-      minionColors[i]
-    ));
-  }
-}
+  draw() {
+    ctx.save();
+    ctx.translate(this.x, this.y);
 
-// ══════════════════════════════════════════════════════════════════════════════
-//  3. MINION AGENT AI ENGINE (실제로 걸어가고, 캐고, 직접 수송하는 인공지능 캐릭터)
-// ══════════════════════════════════════════════════════════════════════════════
-function MinionAgent(x, y, name, color) {
-  this.x = x;
-  this.y = y;
-  this.name = name;
-  this.color = color;
-  
-  // 에이전트 속도 및 가방 컴포넌트 데이터
-  this.speed = 2.2;
-  this.backpack = { type: null, amount: 0, max: 15 };
-  
-  // AI 상태 머신(FSM) 변수 트래킹
-  this.state = 'IDLE'; // IDLE, MOVING_TO_DIG, DIGGING, MOVING_TO_STORE, STORING, MOVING_TO_FACTORY, SUPPLYING
-  this.currentTarget = null;
-  this.currentJob = null;
-  
-  // 말풍선 대사 가독성 렌더링 콤포넌트
-  this.bubbleTimer = 0;
-  this.bubbleText = "";
-  
-  this.update = function() {
-    // 1. 대사 말풍선 업데이트 카운터 처리
-    if (this.bubbleTimer > 0) this.bubbleTimer--;
-    
-    // 무작위 프리 토킹 알림 팝업 트리거
-    if (this.bubbleTimer === 0 && Math.random() < 0.002) {
-      this.saySomething(["배고파..", "열일 중!", "화학 레고 조립 중", "MOF 최고야", "콜록.. 옥시젠 부족?"]);
-    }
-
-    // 2. 주 상태 구조체 유한 상태 머신 연산 실행 루프
-    switch (this.state) {
-      case 'IDLE':
-        // 할 일이 없으면 기지 중앙 허브 주변을 한가롭게 순찰 배회
-        this.currentJob = fetchAvailableJob(this);
-        if (this.currentJob) {
-          this.processAssignedJob();
-        } else {
-          // 한가한 배회 무작위 브라운 운동식 가속 운동
-          if (Math.random() < 0.02) {
-            let midR = Math.floor(MAP_HEIGHT / 2);
-            let midC = Math.floor(MAP_WIDTH / 2);
-            this.currentTarget = {
-              x: (midC * TILE_SIZE) + 24 + (Math.random() * 120 - 60),
-              y: (midR * TILE_SIZE) + 24 + (Math.random() * 120 - 60)
-            };
-          }
-          if (this.currentTarget) {
-            this.moveToTargetPoint(this.currentTarget.x, this.currentTarget.y);
-          }
-        }
-        break;
-        
-      case 'MOVING_TO_DIG':
-        if (!this.currentJob || worldMap[this.currentJob.r][this.currentJob.c].markedForDig === false) {
-          this.cancelCurrentJob();
-          break;
-        }
-        // 채굴할 타일 주변에 물리적으로 도달했는지 도달 연산 수행
-        let targetX = (this.currentJob.c * TILE_SIZE) + 24;
-        let targetY = (this.currentJob.r * TILE_SIZE) + 24;
-        let dist = Math.sqrt(Math.pow(this.x - targetX, 2) + Math.pow(this.y - targetY, 2));
-        
-        if (dist < TILE_SIZE * 1.2) {
-          this.state = 'DIGGING';
-          this.saySomething(["광석 캐는 중!", "뚝딱뚝딱", "에이샤!"]);
-        } else {
-          this.moveToTargetPoint(targetX, targetY);
-        }
-        break;
-        
-      case 'DIGGING':
-        if (!this.currentJob) { this.cancelCurrentJob(); break; }
-        let tile = worldMap[this.currentJob.r][this.currentJob.c];
-        
-        // 망치질/곡괭이질 채굴 게이지 실시간 누적 연산 진행
-        tile.minedProgress += 1.5 * state.research.speedMultiplier;
-        if (tile.minedProgress >= 100) {
-          // 채굴이 완료되어 블록 원소 제거 및 아이템 인벤토리 임시 드롭 연산 처리
-          let itemType = tile.type; 
-          worldMap[this.currentJob.r][this.currentJob.c].type = 'empty';
-          worldMap[this.currentJob.r][this.currentJob.c].markedForDig = false;
-          
-          // 가방 공간 컴포넌트에 자원 자동 저장 채워넣기
-          this.backpack.type = itemType;
-          this.backpack.amount = 10; // 10kg 습득 완료
-          
-          addLog(`✓ ${this.name} 연구원이 [${TILE_TYPES[itemType].name}] 채굴을 완수했습니다.`, 'success');
-          
-          // 캐낸 원광을 보관소로 바로 배달하기 위한 상태 천이 전환
-          this.state = 'MOVING_TO_STORE';
-        }
-        break;
-        
-      case 'MOVING_TO_STORE':
-        // 맵 상에 배치된 저장고 혹은 기지 코어 컴포넌트의 위치를 추적 검색
-        let destStorage = findNearestStorage(this.x, this.y);
-        if (destStorage) {
-          let sX = (destStorage.c * TILE_SIZE) + 24;
-          let sY = (destStorage.r * TILE_SIZE) + 24;
-          let sDist = Math.sqrt(Math.pow(this.x - sX, 2) + Math.pow(this.y - sY, 2));
-          
-          if (sDist < TILE_SIZE * 1.0) {
-            this.state = 'STORING';
-          } else {
-            this.moveToTargetPoint(sX, sY);
-          }
-        } else {
-          // 저장고가 없으면 월드 경제 상태 자산으로 공중 부양 즉시 귀속 처리 (소프트 안전 패치)
-          if (this.backpack.type) {
-            state.resources[this.backpack.type] += this.backpack.amount;
-          }
-          this.resetBackpack();
-          this.cancelCurrentJob();
-        }
-        break;
-        
-      case 'STORING':
-        // 저장 보관소 컴포넌트에 인벤토리 자재 하역 및 적재 연산 루프 실행
-        if (this.backpack.type) {
-          state.resources[this.backpack.type] += this.backpack.amount;
-          addLog(`📦 ${this.name}: 창고에 자원 ${this.backpack.amount}kg 입고 완료.`, 'info');
-        }
-        this.resetBackpack();
-        this.cancelCurrentJob();
-        break;
-
-      case 'MOVING_TO_FACTORY':
-        // 자원 공급 및 정련 자동화 물류 루프를 위한 타겟 이동 제어 처리
-        if (!this.currentJob || !this.currentJob.buildingTarget) { this.cancelCurrentJob(); break; }
-        let fBuild = this.currentJob.buildingTarget;
-        let fX = (fBuild.c * TILE_SIZE) + 24;
-        let fY = (fBuild.r * TILE_SIZE) + 24;
-        let fDist = Math.sqrt(Math.pow(this.x - fX, 2) + Math.pow(this.y - fY, 2));
-
-        if (fDist < TILE_SIZE * 1.0) {
-          this.state = 'SUPPLYING';
-        } else {
-          this.moveToTargetPoint(fX, fY);
-        }
-        break;
-
-      case 'SUPPLYING':
-        if (this.currentJob && this.currentJob.buildingTarget) {
-          let bTar = this.currentJob.buildingTarget;
-          // 가방에 든 공급 원료 투하 완료 연산
-          if (bTar.type === 'refinery') {
-            bTar.rawBuffer = (bTar.rawBuffer || 0) + 10;
-          }
-          addLog(`⚙️ ${this.name}: 정련소 공장에 원료 화학 물질을 수송 투하했습니다.`, 'info');
-        }
-        this.resetBackpack();
-        this.cancelCurrentJob();
-        break;
-    }
-  };
-  
-  // 목표 원점 위치 벡터를 향한 물리 수치 이동 가속 연산식
-  this.moveToTargetPoint = function(tx, ty) {
-    let dx = tx - this.x;
-    let dy = ty - this.y;
-    let angle = Math.atan2(dy, dx);
-    
-    let currentSpeed = this.speed * state.research.speedMultiplier;
-    
-    this.x += Math.cos(angle) * currentSpeed;
-    this.y += Math.sin(angle) * currentSpeed;
-  };
-  
-  this.saySomething = function(texts) {
-    this.bubbleText = texts[Math.floor(Math.random() * texts.length)];
-    this.bubbleTimer = 90; // 90프레임 노출 노티스
-  };
-  
-  this.cancelCurrentJob = function() {
-    this.currentJob = null;
-    this.state = 'IDLE';
-    this.currentTarget = null;
-  };
-  
-  this.resetBackpack = function() {
-    this.backpack.type = null;
-    this.backpack.amount = 0;
-  };
-  
-  this.processAssignedJob = function() {
-    if (this.currentJob.jobType === 'dig') {
-      this.state = 'MOVING_TO_DIG';
-    } else if (this.currentJob.jobType === 'supply_refinery') {
-      // 보관창고에서 자재를 먼저 꺼내 들고 출발하도록 설정
-      if (state.resources.rawmetal >= 10) {
-        state.resources.rawmetal -= 10;
-        this.backpack.type = 'rawmetal';
-        this.backpack.amount = 10;
-        this.state = 'MOVING_TO_FACTORY';
-      } else {
-        this.currentJob = null;
-        this.state = 'IDLE';
-      }
-    }
-  };
-  
-  this.draw = function() {
-    // 카메라 스크롤 행렬 트랜스폼 오프셋 변환 적용 위치 연산
-    let renderX = this.x + state.camera.x;
-    let renderY = this.y + state.camera.y;
-    
-    // 귀여운 캡슐 모양 헤드 및 바디 방호복 렌더 기하 구조 정의
+    // 알약 모양의 귀여운 방호복 몸통 그리기
     ctx.fillStyle = this.color;
     ctx.beginPath();
-    ctx.arc(renderX, renderY - 14, 9, 0, Math.PI * 2);
+    ctx.arc(0, -10, 10, Math.PI, 0, false); // 머리 돔 (크기를 살짝 키움)
+    ctx.lineTo(10, 12);
+    ctx.arc(0, 12, 10, 0, Math.PI, false); // 하단 엉덩이
+    ctx.lineTo(-10, -10);
+    ctx.closePath();
     ctx.fill();
-    
-    // 방호복 상하체 유니폼 드로잉
-    ctx.fillRect(renderX - 8, renderY - 5, 16, 18);
-    
-    // 뽈뽈거리며 움직이는 애니메이션 다리 파츠 렌더 연출
-    let legCycle = Math.sin(Date.now() * 0.015 + this.x) * 5;
-    ctx.fillStyle = "#ffffff";
-    ctx.fillRect(renderX - 6, renderY + 13, 3, 5 + legCycle);
-    ctx.fillRect(renderX + 3, renderY + 13, 3, 5 - legCycle);
-    
-    // 가방에 자재를 메고 있는 경우 가시적 배낭 이펙트 오버레이
-    if (this.backpack.amount > 0) {
-      ctx.fillStyle = "#f59e0b";
-      ctx.fillRect(renderX - 13, renderY - 2, 5, 12);
-    }
-    
-    // 캐릭터 에이전트 이름 네임 태그 출력
-    ctx.fillStyle = "#f1f5f9";
-    ctx.font = "bold 10px sans-serif";
-    ctx.textAlign = "center";
-    ctx.fillText(this.name, renderX, renderY - 26);
-    
-    // 실시간 작업 수행 텍스트 디버그 스트링 출력
-    ctx.fillStyle = "#94a3b8";
-    ctx.font = "9px monospace";
-    ctx.fillText(`[${this.state}]`, renderX, renderY + 24);
-    
-    // 귀여운 대사 말풍선 그래픽 박스 드로잉 가설 연산
+
+    // 헬멧 유리창 고글 표현
+    ctx.fillStyle = '#e2e8f0';
+    ctx.fillRect(-6, -12, 12, 7);
+    ctx.fillStyle = '#1e293b';
+    ctx.fillRect(this.vx > 0 ? 3 : -5, -10, 2, 2); // 이동 방향에 따른 눈동자 시선 처리
+
+    // 뽈뽈거리는 다리 애니메이션
+    let walk = Math.sin(Date.now() * 0.015) * 4;
+    ctx.fillStyle = '#ffffff';
+    ctx.fillRect(-6, 20, 4, 5 + walk);
+    ctx.fillRect(2, 20, 4, 5 - walk);
+
+    // 연구원 이름표
+    ctx.fillStyle = '#cbd5e1';
+    ctx.font = 'bold 10px sans-serif';
+    ctx.textAlign = 'center';
+    ctx.fillText(this.name, 0, -26);
+
+    ctx.restore();
+
+    // 말풍선 드로잉
     if (this.bubbleTimer > 0) {
-      ctx.fillStyle = "#ffffff";
-      ctx.fillRect(renderX - 45, renderY - 56, 90, 20);
-      ctx.strokeStyle = "#1e293b";
-      ctx.lineWidth = 1;
-      ctx.strokeRect(renderX - 45, renderY - 56, 90, 20);
-      
-      ctx.fillStyle = "#0f172a";
+      ctx.fillStyle = "white";
+      ctx.fillRect(this.x - 45, this.y - 56, 90, 18);
+      ctx.strokeStyle = "#475569";
+      ctx.strokeRect(this.x - 45, this.y - 56, 90, 18);
+      ctx.fillStyle = "#000";
       ctx.font = "bold 9px sans-serif";
-      ctx.fillText(this.bubbleText, renderX, renderY - 43);
+      ctx.textAlign = "center";
+      ctx.fillText(this.bubbleText, this.x, this.y - 44);
     }
-  };
+  }
 }
 
 // ═══════════════════════════════════════════
-//  4. AUTOMATION JOB DISPATCHER (인공지능 작업 배분 밸런서)
+//  초기화 세팅
 // ═══════════════════════════════════════════
-function fetchAvailableJob(minion) {
-  // 우선순위 1순위: 플레이어가 직접 수동 지령 내린 타일 마이닝 디깅 소스 검색
-  for (let r = 0; r < MAP_HEIGHT; r++) {
-    for (let c = 0; c < MAP_WIDTH; c++) {
-      if (worldMap[r][c].markedForDig && !isJobAlreadyTaken('dig', r, c)) {
-        return { jobType: 'dig', r: r, c: c };
-      }
-    }
+function init() {
+  canvas = document.getElementById('game-canvas');
+  ctx = canvas.getContext('2d');
+  
+  const container = document.getElementById('viewport-container');
+  canvas.width = container.clientWidth;
+  canvas.height = container.clientHeight;
+  
+  // 👷 화면 중앙 좌표를 기준으로 캐릭터 스폰 위치 강제 지정!
+  let centerX = canvas.width / 2;
+  let centerY = canvas.height / 2;
+
+  const colors = ['#f472b6', '#60a5fa', '#fbbf24', '#34d399'];
+  const names = ['듀플-화공', '듀플-소재', '듀플-지멘스', '야기-봇'];
+  
+  minions = []; // 초기화
+  for(let i=0; i<4; i++){
+    // 중앙 지점을 기준으로 사방 80픽셀 이내에 확실하게 배치
+    let startX = centerX + (Math.random() * 160 - 80);
+    let startY = centerY + (Math.random() * 160 - 80);
+    minions.push(new Minion(startX, startY, names[i], colors[i]));
   }
   
-  // 우선순위 2순위: 원료가 고갈된 화학 정련 공장에 자동으로 원자재를 수송 배달하는 물류 소스 매칭
-  for (let i = 0; i < buildings.length; i++) {
-    let b = buildings[i];
-    if (b.type === 'refinery' && (b.rawBuffer || 0) < 10) {
-      if (!isJobAlreadyTaken('supply_refinery', b.r, b.c) && state.resources.rawmetal >= 10) {
-        return { jobType: 'supply_refinery', r: b.r, c: b.c, buildingTarget: b };
-      }
-    }
-  }
+  // 기본 중앙 허브 포드 배치
+  buildings.push({ c: Math.floor(colsCount() / 2), r: Math.floor(rowsCount() / 2), type: 'pod' });
+}
+
+function colsCount() { return Math.ceil(canvas.width / TILE_SIZE); }
+function rowsCount() { return Math.ceil(canvas.height / TILE_SIZE); }
+
+// ═══════════════════════════════════════════
+//  틱 루프 (화학 반응 및 연산)
+// ═══════════════════════════════════════════
+function gameTick() {
+  res.sicl += 1.5;
+  res.mat += 0.4;
   
-  return null;
-}
-
-function isJobAlreadyTaken(type, r, c) {
-  return minions.some(m => m.currentJob && m.currentJob.jobType === type && m.currentJob.r === r && m.currentJob.c === c);
-}
-
-function findNearestStorage(x, y) {
-  // 메인 베이스 코어 허브는 항상 가장 확실한 자재 하역기 역할을 겸임함
-  return buildings.find(b => b.type === 'core_hub' || b.type === 'storage');
-}
-
-// ══════════════════════════════════════════════════════════════════════════════
-//  5. CHEMICAL PROCESS TICK LOOP (화공 기상 반응 및 망상 흡착 자동화 로직)
-// ══════════════════════════════════════════════════════════════════════════════
-function chemicalCoreTick() {
-  let activeFactoriesCount = 0;
-  let currentCo2Emission = 0;
-  let currentHclEmission = 0;
+  let deltaCo2 = 0;
+  let deltaHcl = 0;
   
-  let totalCo2InLab = 0;
-  let totalHclInLab = 0;
-
-  // 기지 배치 건축 인프라 엔티티 전수 조사 루프 구동
   buildings.forEach(b => {
-    if (b.type === 'refinery') {
-      // 가방으로 배달된 원료 버퍼가 충분한 경우 화학 기상 반응 상시 실행
-      if ((b.rawBuffer || 0) >= 2) {
-        b.rawBuffer -= 2;
-        state.resources.silicon += 1; // 초고순도 실리콘 결정체 석출 완료
-        
-        currentCo2Emission += 4.5;
-        currentHclEmission += 6.0;
-        activeFactoriesCount++;
-        
-        // 공장 위치 타일에 실시간 오염 가스 직접 고밀도 축적 연산
-        worldMap[b.r][b.c].co2 = Math.min(100, worldMap[b.r][b.c].co2 + 35);
-        worldMap[b.r][b.c].hcl = Math.min(100, worldMap[b.r][b.c].hcl + 45);
+    if (b.type === 'factory') {
+      if (res.sicl >= 2 && res.h2 >= 1) {
+        res.sicl -= 2;
+        res.h2 -= 1;
+        res.silicon += 1; 
+        deltaCo2 += 1.4;  
+        deltaHcl += 1.7;
       }
-    }
-    
-    if (b.type === 'mof') {
-      // 다공성 MOF-5 스펀지 촉매장치: 주변 3x3 격자의 염화수소 흡수 수소 재생 루프
-      let range = 2 * state.research.mofRangeMultiplier;
-      for (let dr = -range; dr <= range; dr++) {
-        for (let dc = -range; dc <= range; dc++) {
-          let nr = b.r + dr;
-          let nc = b.c + dc;
-          if (nr >= 0 && nr < MAP_HEIGHT && nc >= 0 && nc < MAP_WIDTH) {
-            if (worldMap[nr][nc].hcl > 0) {
-              let absorbed = Math.min(worldMap[nr][nc].hcl, 8.0);
-              worldMap[nr][nc].hcl -= absorbed;
-              state.resources.dirt += 0.2; // 부가 환원 보상 처리 리턴
-            }
-          }
-        }
-      }
-    }
-    
-    if (b.type === 'cof') {
-      // COF-999 공기 정화 다공성 타워: 주변 거대 범위 이산화탄소를 탄소 결정으로 포집 재생
-      let range = 3 * state.research.mofRangeMultiplier;
-      for (let dr = -range; dr <= range; dr++) {
-        for (let dc = -range; dc <= range; dc++) {
-          let nr = b.r + dr;
-          let nc = b.c + dc;
-          if (nr >= 0 && nr < MAP_HEIGHT && nc >= 0 && nc < MAP_WIDTH) {
-            if (worldMap[nr][nc].co2 > 0) {
-              let absorbed = Math.min(worldMap[nr][nc].co2, 12.0);
-              worldMap[nr][nc].co2 -= absorbed;
-              
-              if (Math.random() < 0.05) {
-                state.resources.carbon += 1; // 고정화 탄소 빌딩재 획득
-              }
-            }
-          }
-        }
-      }
-    }
-  });
-
-  // 맵 내에 퍼진 기체 확산 및 기지 글로벌 평균 농도 합산 시뮬레이션
-  for (let r = 0; r < MAP_HEIGHT; r++) {
-    for (let c = 0; c < MAP_WIDTH; c++) {
-      // 기상 화학 반응의 자연스러운 확산을 위해 단순 상하좌우 기체 평균 완화 연산 근사치 적용
-      if (worldMap[r][c].type === 'empty') {
-        // 공장에서 자연 배출된 전역 확산 근사치 누적
-        worldMap[r][c].co2 = Math.max(0, worldMap[r][c].co2 + (currentCo2Emission * 0.002));
-        worldMap[r][c].hcl = Math.max(0, worldMap[r][c].hcl + (currentHclEmission * 0.002));
-      }
-      totalCo2InLab += worldMap[r][c].co2;
-      totalHclInLab += worldMap[r][c].hcl;
-    }
-  }
-
-  // 글로벌 대기 오염 전역 수치 환산
-  state.globalCo2 = Math.floor(totalCo2InLab / 8);
-  state.globalHcl = Math.floor(totalHclInLab / 8);
-  state.pollutionRatio = Math.min(100, Math.floor((state.globalCo2 + state.globalHcl) / 4));
-
-  // 과학 기지 연구 진행도 타이머 스케줄러 연산
-  if (state.research.current) {
-    state.research.progress += 2.5;
-    document.getElementById(`res-bar-${state.research.current}`).style.width = `${(state.research.progress / state.research.target) * 100}%`;
-    
-    if (state.research.progress >= state.research.target) {
-      finalizeResearchEffect(state.research.current);
-    }
-  }
-
-  // 글로벌 유지 전력 시스템 연산
-  let powerDrain = 10 + (activeFactoriesCount * 15);
-  state.power = Math.max(0, state.power - powerDrain + 25); // 패시브 수소 하이브리드 발전으로 자가 보충 버퍼 제공
-
-  updateUserInterfaceData();
-}
-
-// ══════════════════════════════════════════════════════════════════════════════
-//  6. REFRESH GRAPHICS CORE (초당 60프레임 완벽 타일 그리드 및 기체 파티클 렌더)
-// ══════════════════════════════════════════════════════════════════════════════
-function renderLabEngine() {
-  ctx.clearRect(0, 0, canvas.width, canvas.height);
-  
-  // 1. 월드 인프라 맵 타일 레이어 전수 드로잉
-  for (let r = 0; r < MAP_HEIGHT; r++) {
-    for (let c = 0; c < MAP_WIDTH; c++) {
-      let tX = (c * TILE_SIZE) + state.camera.x;
-      let tY = (r * TILE_SIZE) + state.camera.y;
-      let tile = worldMap[r][c];
-      
-      // 렌더링 성능 보호용 화면 바깥 영역 자동 컬링 연산 처리
-      if (tX + TILE_SIZE < 0 || tX > canvas.width || tY + TILE_SIZE < 0 || tY > canvas.height) {
-        continue;
-      }
-      
-      // 블록 타입별 표면 텍스처 컬러 매핑 드로잉
-      let tileConfig = TILE_TYPES[tile.type] || TILE_TYPES.empty;
-      ctx.fillStyle = tileConfig.color;
-      ctx.fillRect(tX, tY, TILE_SIZE, TILE_SIZE);
-      
-      // 타일 내부 미세 격자 실선 아웃라인 표현
-      ctx.strokeStyle = "#131722";
-      ctx.lineWidth = 1;
-      ctx.strokeRect(tX, tY, TILE_SIZE, TILE_SIZE);
-      
-      // 플레이어 유저가 마우스로 채굴 지령 마킹 스케줄러를 가설해 둔 경우 오버레이 십자 가이드 렌더
-      if (tile.markedForDig) {
-        ctx.strokeStyle = "#ef4444";
-        ctx.lineWidth = 2;
-        ctx.strokeRect(tX + 4, tY + 4, TILE_SIZE - 8, TILE_SIZE - 8);
-        
-        // 채굴 진행도 미세 퍼센트 게이지 바 드로잉
-        if (tile.minedProgress > 0) {
-          ctx.fillStyle = "#ef4444";
-          ctx.fillRect(tX + 4, tY + TILE_SIZE - 8, (TILE_SIZE - 8) * (tile.minedProgress / 100), 4);
-        }
-      }
-
-      // 기상 독성 분소 가스 오염 농도 중첩 블렌딩 렌더링 (진짜 산소미포함 스타일의 기체 확산 셰이딩 시각화)
-      if (tile.co2 > 1 || tile.hcl > 1) {
-        let opacityCo2 = Math.min(0.4, tile.co2 * 0.007);
-        let opacityHcl = Math.min(0.4, tile.hcl * 0.007);
-        
-        if (tile.co2 > 0) {
-          ctx.fillStyle = `rgba(74, 222, 128, ${opacityCo2})`; // 이산화탄소 레이어: 초록빛 독성
-          ctx.fillRect(tX, tY, TILE_SIZE, TILE_SIZE);
-        }
-        if (tile.hcl > 0) {
-          ctx.fillStyle = `rgba(234, 179, 8, ${opacityHcl})`; // 염화수소 가스 레이어: 노란빛 산성 독기
-          ctx.fillRect(tX, tY, TILE_SIZE, TILE_SIZE);
-        }
-      }
-    }
-  }
-  
-  // 2. 배치된 고정 건축 설비 머시너리 그래픽 기하 구조 드로잉
-  buildings.forEach(b => {
-    let bX = (b.c * TILE_SIZE) + state.camera.x;
-    let bY = (b.r * TILE_SIZE) + state.camera.y;
-    
-    if (b.type === 'core_hub') {
-      ctx.fillStyle = "#2563eb";
-      ctx.fillRect(bX + 2, bY + 2, TILE_SIZE - 4, TILE_SIZE - 4);
-      ctx.strokeStyle = "#60a5fa";
-      ctx.strokeRect(bX + 2, bY + 2, TILE_SIZE - 4, TILE_SIZE - 4);
-      ctx.fillStyle = "#ffffff";
-      ctx.font = "bold 9px sans-serif";
-      ctx.fillText("📡중앙허브", bX + 4, bY + 28);
-    }
-    else if (b.type === 'storage') {
-      ctx.fillStyle = "#1e293b";
-      ctx.fillRect(bX + 4, bY + 4, TILE_SIZE - 8, TILE_SIZE - 8);
-      ctx.strokeStyle = "#94a3b8";
-      ctx.strokeRect(bX + 4, bY + 4, TILE_SIZE - 8, TILE_SIZE - 8);
-      ctx.fillStyle = "#f1f5f9";
-      ctx.font = "9px sans-serif";
-      ctx.fillText("📦간이창고", bX + 4, bY + 28);
-    }
-    else if (b.type === 'refinery') {
-      ctx.fillStyle = "#475569";
-      ctx.fillRect(bX + 3, bY + 3, TILE_SIZE - 6, TILE_SIZE - 6);
-      
-      // 원자재 잔량 버퍼 미세 게이지 가시화 출력
-      ctx.fillStyle = "#a855f7";
-      ctx.fillRect(bX + 6, bY + 6, 8, 8);
-      
-      ctx.fillStyle = "#38bdf8";
-      ctx.font = "bold 8px sans-serif";
-      ctx.fillText(`🏭정련 [${b.rawBuffer||0}]`, bX + 4, bY + 30);
     }
     else if (b.type === 'mof') {
-      ctx.fillStyle = "#7c2d12";
-      ctx.fillRect(bX + 4, bY + 4, TILE_SIZE - 8, TILE_SIZE - 8);
-      ctx.strokeStyle = "#ea580c";
-      ctx.strokeRect(bX + 6, bY + 6, TILE_SIZE - 12, TILE_SIZE - 12);
-      ctx.fillStyle = "#fff";
-      ctx.font = "8px sans-serif";
-      ctx.fillText("🧽MOF필터", bX + 6, bY + 28);
-    }
-    else if (b.type === 'cof') {
-      ctx.fillStyle = "#064e3b";
-      ctx.fillRect(bX + 4, bY - 8, TILE_SIZE - 8, TILE_SIZE + 8); // 굴뚝 타워 형상 연출 위로 길게 드로우
-      ctx.fillStyle = "#10b981";
-      ctx.fillRect(bX + 10, bY, TILE_SIZE - 20, 10);
-      ctx.fillStyle = "#fff";
-      ctx.font = "8px sans-serif";
-      ctx.fillText("🌲COF타워", bX + 6, bY + 32);
+      if (environment.hcl > 1) {
+        environment.hcl -= 2.2; 
+        res.h2 += 1.0;          
+      }
     }
   });
+  
+  environment.co2 = Math.max(0, Math.min(100, environment.co2 + deltaCo2 - 0.4));
+  environment.hcl = Math.max(0, Math.min(100, environment.hcl + deltaHcl - 0.2));
+  
+  document.getElementById('r-sicl').textContent = Math.floor(res.sicl);
+  document.getElementById('r-h2').textContent = Math.floor(res.h2);
+  document.getElementById('r-mat').textContent = Math.floor(res.mat);
+  document.getElementById('hud-si').textContent = res.silicon + "개";
+  
+  document.getElementById('h-co2').textContent = Math.floor(environment.co2) + "%";
+  document.getElementById('h-hcl').textContent = Math.floor(environment.hcl) + "%";
+}
 
-  // 3. 인공지능 복제 연구원들의 모션 그래픽 업뎃 및 독립 드로잉 함수 호출
+// ═══════════════════════════════════════════
+//  그래픽 렌더링 (60FPS)
+// ═══════════════════════════════════════════
+function render() {
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  
+  // 1. 대기 오염도 가스 시각화
+  if (environment.co2 > 2 || environment.hcl > 2) {
+    let alpha = Math.min(0.45, (environment.co2 + environment.hcl) * 0.005);
+    ctx.fillStyle = `rgba(100, 222, 100, ${alpha})`;
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+  }
+  
+  // 2. 바닥 기본 그리드 타일선 그리기
+  ctx.strokeStyle = '#1e2235';
+  ctx.lineWidth = 1;
+  const cols = colsCount();
+  const rows = rowsCount();
+  for (let r = 0; r < rows; r++) {
+    for (let c = 0; c < cols; c++) {
+      ctx.strokeRect(c * TILE_SIZE, r * TILE_SIZE, TILE_SIZE, TILE_SIZE);
+    }
+  }
+  
+  // 3. 설비 기계 장치 드로잉
+  buildings.forEach(b => {
+    let px = b.c * TILE_SIZE;
+    let py = b.r * TILE_SIZE;
+    
+    if (b.type === 'pod') {
+      ctx.fillStyle = '#0284c7'; ctx.fillRect(px+3, py+3, TILE_SIZE-6, TILE_SIZE-6);
+      ctx.fillStyle = '#fff'; ctx.font = 'bold 9px sans-serif'; ctx.fillText("🛰️제어 포드", px+5, py+32);
+    } 
+    else if (b.type === 'factory') {
+      ctx.fillStyle = '#475569'; ctx.fillRect(px+4, py+4, TILE_SIZE-8, TILE_SIZE-8);
+      ctx.fillStyle = '#38bdf8'; ctx.font = 'bold 9px sans-serif'; ctx.fillText("🏭정련소", px+7, py+32);
+    }
+    else if (b.type === 'mof') {
+      ctx.fillStyle = '#ca8a04'; ctx.fillRect(px+5, py+5, TILE_SIZE-10, TILE_SIZE-10);
+      ctx.strokeStyle = '#f59e0b'; ctx.strokeRect(px+10, py+10, TILE_SIZE-20, TILE_SIZE-20);
+      ctx.fillStyle = '#fff'; ctx.font = 'bold 9px sans-serif'; ctx.fillText("🧽MOF필터", px+5, py+32);
+    }
+  });
+  
+  // 4. 귀여운 연구원 캐릭터 업뎃 및 그리기
   minions.forEach(m => {
     m.update();
     m.draw();
   });
-
-  requestAnimationFrame(renderLabEngine);
+  
+  requestAnimationFrame(render);
 }
 
-// ══════════════════════════════════════════════════════════════════════════════
-//  7. CONTROLLER INTERACTION SYSTEM (드래그 맵 내비게이션 및 실시간 배치 인터랙션)
-// ══════════════════════════════════════════════════════════════════════════════
-function setupUserInteractionControls() {
-  const container = document.getElementById('canvas-container');
-  
-  // 마우스 클릭 다운 상태 벡터 캡처
-  container.addEventListener('mousedown', e => {
-    // 우클릭 마우스 다운인 경우 월드 카메라 드래그 무한 탐사 스크롤 가동
-    if (e.button === 2 || state.currentMode === 'inspect') {
-      state.camera.isDragging = true;
-      state.camera.startX = e.clientX - state.camera.x;
-      state.camera.startY = e.clientY - state.camera.y;
-      e.preventDefault();
-    } else if (e.button === 0) {
-      // 좌클릭 건설 및 마이닝 지령 트리거 작동 연산
-      let rect = canvas.getBoundingClientRect();
-      let clickX = e.clientX - rect.left - state.camera.x;
-      let clickY = e.clientY - rect.top - state.camera.y;
-      
-      let c = Math.floor(clickX / TILE_SIZE);
-      let r = Math.floor(clickY / TILE_SIZE);
-      
-      if (c >= 0 && c < MAP_WIDTH && r >= 0 && r < MAP_HEIGHT) {
-        handlePlayerGridAction(r, c);
-      }
-    }
-  });
-  
-  container.addEventListener('mousemove', e => {
-    if (state.camera.isDragging) {
-      state.camera.x = e.clientX - state.camera.startX;
-      state.camera.y = e.clientY - state.camera.startY;
-    }
-  });
-  
-  window.addEventListener('mouseup', () => {
-    state.camera.isDragging = false;
-  });
-  
-  // 컨텍스트 기본 메뉴 브라우저 팝업 차단 (우클릭 부드러운 스크롤 최적화)
-  container.addEventListener('contextmenu', e => e.preventDefault());
-  
-  // 왼쪽 사이드바 지령 및 청사진 버튼 셀렉터 이벤트 리스너 통합 연결
-  document.querySelectorAll('.action-grid').forEach(grid => {
-    grid.addEventListener('click', e => {
-      let btn = e.target.closest('.action-btn');
-      if (!btn || btn.onclick) return; // 상단 일반 기능형 버튼 패스
-      
-      document.querySelectorAll('.action-btn').forEach(b => b.classList.remove('active'));
-      btn.classList.add('active');
-      state.currentMode = btn.dataset.mode;
-    });
-  });
-}
+// ═══════════════════════════════════════════
+//  컨트롤 인터랙션
+// ═══════════════════════════════════════════
+document.getElementById('build-menu').addEventListener('click', e => {
+  let btn = e.target.closest('.build-btn');
+  if (!btn) return;
+  document.querySelectorAll('.build-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  currentMode = btn.dataset.mode;
+});
 
-function handlePlayerGridAction(r, c) {
-  let tile = worldMap[r][c];
+canvas.addEventListener('click', e => {
+  const rect = canvas.getBoundingClientRect();
+  const x = e.clientX - rect.left;
+  const y = e.clientY - rect.top;
   
-  // 1. 블록 채굴 지령 실행 로직
-  if (state.currentMode === 'dig') {
-    if (TILE_TYPES[tile.type].solid && tile.type !== 'bedrock') {
-      tile.markedForDig = !tile.markedForDig; // 토글식 마킹 상태 변환
-      if (tile.markedForDig) {
-        addLog(`⛏️ [${r}, ${c}] 좌표에 연구원 채굴 지령이 예약 설정되었습니다.`, 'info');
-      }
-    }
-    return;
+  const c = Math.floor(x / TILE_SIZE);
+  const r = Math.floor(y / TILE_SIZE);
+  
+  if (currentMode === 'inspect') return;
+  
+  if (buildings.some(b => b.c === c && b.r === r)) return;
+  
+  if (currentMode === 'build_factory' && res.sicl >= 20) {
+    res.sicl -= 20;
+    buildings.push({ c: c, r: r, type: 'factory' });
+  } 
+  else if (currentMode === 'build_mof' && res.mat >= 15) {
+    res.mat -= 15;
+    buildings.push({ c: c, r: r, type: 'mof' });
   }
-  
-  // 이미 구조물이 부지를 선점하고 있는 경우 중복 건설 기각 방지
-  let isOccupied = buildings.some(b => b.r === r && b.c === c);
-  if (isOccupied || TILE_TYPES[tile.type].solid) return;
-  
-  // 2. 티어별 인프라 설계 자산 코스트 검사 및 소비 배치 프로세스
-  if (state.currentMode === 'build_storage') {
-    if (state.resources.dirt >= 10) {
-      state.resources.dirt -= 10;
-      buildings.push({ id: 'storage_' + Date.now(), r: r, c: c, type: 'storage', name: '자재 간이 보관소' });
-      addLog(`🏗️ 지정 영역에 자재 보관 허브를 신설했습니다. 연구원들이 원광을 더 빠르게 보관합니다.`, 'success');
-    } else { alert("흙 원자재가 부족합니다!"); }
-  }
-  else if (state.currentMode === 'build_refinery') {
-    if (state.resources.rawmetal >= 20 && state.resources.dirt >= 15) {
-      state.resources.rawmetal -= 20;
-      state.resources.dirt -= 15;
-      buildings.push({ id: 'refinery_' + Date.now(), r: r, c: c, type: 'refinery', name: '기상 정련소', rawBuffer: 0 });
-      addLog(`🏗️ 규소 기상 환원 정련 시설 완공! 연구원들이 금속 자원을 수송하기 시작합니다.`, 'success');
-    } else { alert("건설 자원이 부족합니다!"); }
-  }
-  else if (state.currentMode === 'build_mof') {
-    if (state.resources.rawmetal >= 15 && state.resources.rawlinker >= 15) {
-      state.resources.rawmetal -= 15;
-      state.resources.rawlinker -= 15;
-      buildings.push({ id: 'mof_' + Date.now(), r: r, c: c, type: 'mof', name: 'MOF-5 가스 흡착기' });
-      addLog(`🏗️ 다공성 금속 유기 골격체(MOF-5) 촉매 필터망 설치 완료. 독성 산 가스를 흡수합니다.`, 'success');
-    } else { alert("조립용 배위 결합성 원료가 모자랍니다!"); }
-  }
-  else if (state.currentMode === 'build_cof') {
-    if (state.resources.rawlinker >= 25) {
-      state.resources.rawlinker -= 25;
-      buildings.push({ id: 'cof_' + Date.now(), r: r, c: c, type: 'cof', name: 'COF-999 공기 청정탑' });
-      addLog(`🏗️ 아민화 결합 구조체(COF-999) 청정 타워 완공. 이산화탄소를 강력 석출합니다.`, 'success');
-    } else { alert("유기 결합체 원료 가닥이 부족합니다!"); }
-  }
-}
+});
 
-// ══════════════════════════════════════════════════════════════════════════════
-//  8. SCIENCE TECH ENGINE & UTILITIES (원소 공학 연구 및 유저 인터페이스 바인딩)
-// ══════════════════════════════════════════════════════════════════════════════
-function startResearch(techId, cost) {
-  if (state.resources.silicon >= cost) {
-    if (state.research.current) {
-      alert("이미 진행 중인 국가 화학 과제가 있습니다!");
-      return;
-    }
-    state.resources.silicon -= cost;
-    state.research.current = techId;
-    state.research.progress = 0;
-    addLog(`🔬 신규 화학공학 연구 과제 [${techId}] 개발을 가동했습니다.`, 'info');
-  } else {
-    alert(`과제 해금을 위한 초고순도 실리콘 웨이퍼 소자가 부족합니다! (필요량: ${cost}개)`);
-  }
-}
-
-function finalizeResearchEffect(techId) {
-  if (techId === 'speed') {
-    state.research.speedMultiplier = 1.35;
-    addLog(`🎉 [모터 기동력 강화] 연구 완료! 이제 연구원들이 35% 빠르게 질주합니다.`, 'success');
-  } else if (techId === 'mof_tech') {
-    state.research.mofRangeMultiplier = 2.0;
-    addLog(`🎉 [메조포러스 격자 구조 정밀화] 완료! MOF/COF 필터 장치의 가스 흡착 반경이 2배로 확장되었습니다.`, 'success');
-  }
-  state.research.current = null;
-  state.research.progress = 0;
-}
-
-function switchTab(tabId) {
-  document.querySelectorAll('.tab-trigger').forEach(t => t.classList.remove('active'));
-  document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
-  
-  event.target.classList.add('active');
-  document.getElementById(`tab-${tabId}`).classList.add('active');
-}
-
-function addLog(text, type) {
-  const consoleLog = document.getElementById('log-console');
-  let color = "#a7f3d0";
-  if (type === 'success') color = "#60a5fa";
-  if (type === 'info') color = "#f472b6";
-  
-  consoleLog.innerHTML += `<div style="color:${color};">> ${text}</div>`;
-  consoleLog.scrollTop = consoleLog.scrollHeight;
-}
-
-function updateUserInterfaceData() {
-  // 상단 바 계측 텍스트 동기화
-  let idleCount = minions.filter(m => m.state === 'IDLE').length;
-  document.getElementById('global-idle-minions').textContent = idleCount;
-  document.getElementById('global-total-minions').textContent = minions.length;
-  document.getElementById('global-power').textContent = `${Math.floor(state.power)} / ${state.maxPower} W`;
-  
-  let pollutionText = `안전 (0%)`;
-  if (state.pollutionRatio > 15) pollutionText = `주의 (${state.pollutionRatio}%)`;
-  if (state.pollutionRatio > 50) pollutionText = `⚠️ 위험 비상 (${state.pollutionRatio}%)`;
-  document.getElementById('global-pollution').textContent = pollutionText;
-  
-  // 창고 인벤토리 실시간 도큐먼트 돔 업데이트
-  document.getElementById('st-dirt').textContent = `${Math.floor(state.resources.dirt)} kg`;
-  document.getElementById('st-rawmetal').textContent = `${Math.floor(state.resources.rawmetal)} kg`;
-  document.getElementById('st-rawlinker').textContent = `${Math.floor(state.resources.rawlinker)} kg`;
-  document.getElementById('st-silicon').textContent = `${Math.floor(state.resources.silicon)} 개`;
-  document.getElementById('st-carbon').textContent = `${Math.floor(state.resources.carbon)} 개`;
-  
-  // 우측 상단 미세 센서 데이터 연동
-  document.getElementById('hud-val-co2').textContent = `${state.globalCo2 * 12} ppm`;
-  document.getElementById('hud-val-hcl').textContent = `${state.globalHcl * 8} ppm`;
-}
-
-// ══════════════════════════════════════════════════════════════════════════════
-//  9. CORES INITIALIZATION START (게임 구동 및 런타임 앤트리 포인트)
-// ══════════════════════════════════════════════════════════════════════════════
-function initMainLabEngine() {
-  canvas = document.getElementById('game-canvas');
-  const container = document.getElementById('canvas-container');
-  canvas.width = container.clientWidth;
-  canvas.height = container.clientHeight;
-  
-  // 윈도우 창 크기 가변 대응 리사이저 세팅
-  window.addEventListener('resize', () => {
+// 창 크기가 바뀔 때 캐릭터가 튕겨 나가지 않도록 조정
+window.addEventListener('resize', () => {
+  if (canvas) {
+    const container = document.getElementById('viewport-container');
     canvas.width = container.clientWidth;
     canvas.height = container.clientHeight;
-  });
-  
-  generateLabWorld();
-  setupUserInteractionControls();
-  
-  // 메인 주 그래픽 렌더 60FPS 애니메이션 루프 킥오프
-  renderLabEngine();
-  
-  // 화학 수치 및 인공지능 스케줄러 1초 연쇄 클럭 동작
-  setInterval(chemicalCoreTick, 1000);
-}
+  }
+});
 
-// 브라우저 돔 완료 시 즉각 구동 선언
-window.onload = initMainLabEngine;
+// 엔진 가동 시작
+init();
+render();
+setInterval(gameTick, 1000);
 </script>
 </body>
 </html>
